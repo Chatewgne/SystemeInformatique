@@ -3,4 +3,8 @@
 %%
 start:global;
 global:tMAIN tPARO tPARF tACO body tACF;
-body: tID tEQU tVAL tPOV;
+body:declaration instruction;
+declaration:type tID tPOV | type tID tEQU tVAL tPOV;
+type:tINT;
+instruction:tID tEQU tVAL tPOV;
+ 
