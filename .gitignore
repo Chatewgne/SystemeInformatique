@@ -1,3 +1,4 @@
 lex.yy.c
 y.tab.c
 compiler
+y.tab.h
