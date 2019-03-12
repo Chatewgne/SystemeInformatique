@@ -22,5 +22,5 @@
 "else" {return tELS;}
 "for" {return tFOR;}
 "return" {return tRET;}
-([0-9]+)|([0-9]+e[0-9]+) {return tVAL;}
-[a-zA-Z]([a-z]|[A-Z]|[0-9]|_)* {return tID;}
+([0-9]+)|([0-9]+e[0-9]+) {yylval.text = strdup(yytext); return tVAL;}
+[a-zA-Z]([a-z]|[A-Z]|[0-9]|_)* {yylval.text = strdup(yytext); return tID;}
