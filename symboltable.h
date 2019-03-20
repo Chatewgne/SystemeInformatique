@@ -16,16 +16,28 @@ typedef struct{
 
 
 
-// Initialize a symbol table (with 1024 symbols), first address is 4000, return -1 if we couldn't initialize
-int symtab_init(SYMTAB * symtab);
+// Initialize a symbol table (with 1024 symbols)
+// first address is 4000, return -1 if we couldn't initialize
+
+/*  AS IT IS, you must give the address of the pointer to
+    a symbol table (not initialized) */
+int symtab_init(SYMTAB ** pp_symtab);
+
+// Free the pointer and the memory associated to the symbol table
+void symtab_free(SYMTAB ** pp_symtab);
 
 
 // Add a symbol to the symbol table (return -1 if cannot add one)
-int symtab_add(SYMTAB * symtab, char * name, char * type, int depth);
+/*
+    Error codes :
+    - 1 : The variable type hasn't been recognized
+    - 2 : The symbol table is already full (last_index >= size)
+*/
+int symtab_add(SYMTAB * p_symtab, char * name, char * type, int depth);
 
 
 /*  
 *   Return the SYMBOL struct corresponding to the symbol designated by id
 *   Depth equals -1 when no symbol has been found
 */
-SYMBOL symtab_get(SYMTAB symtab, char * id);
+SYMBOL symtab_get(SYMTAB * p_symtab, char * id);
