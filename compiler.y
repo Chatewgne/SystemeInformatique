@@ -2,16 +2,19 @@
     #include <stdio.h>
     #include <stdlib.h>
     #include "symboltable.h"
+    #include <string.h>
     int yylex();
     void yyerror(char*);
 
     //mémorisation des variables
     int depth = 0 ;
-    SYMTAB symtab ;
-    char* glob_type ;
+    SYMTAB* symtab ;
+    char glob_type[30] ;
     char* glob_variable = 0;
     int glob_value = 0 ;
     char glob_operator = '+';
+    
+    //init 
 %}
 
 %union {
@@ -20,19 +23,20 @@
     char car ;
 }
 
-%token <text> tID
+%token <text> tID tINT
 %token <nb> tVAL tCON
 %token <car> tPLU tEQU tSLA tMOI tSTA
-%token tPARO tPARF tACO tACF tVIR tPOV tINT tMAIN tIF tFOR tELS tRET tPRI  
+%token tPARO tPARF tACO tACF tVIR tPOV tMAIN tIF tFOR tELS tRET tPRI  
 
 %left tPLU tMOI
 %left tSTA tSLA //STA et SLA prioritaires
 
 %%
-start: { printf("-- MEMOIRE -- symtab initialisé, succes code : %d\n",symtab_init(&symtab) ); } global ; 
+start: {
+    printf("-- MEMOIRE -- Symtab initialisé, success code : %d\n",symtab_init(&symtab) ); } global ; 
 
 
-global:tMAIN tPARO tPARF tACO body tACF;
+global:tMAIN tPARO tPARF tACO {depth+=1;} body tACF {depth-=1;} ;
 
 body:declaration_lines instructions;
 
@@ -47,10 +51,13 @@ declaration_line : type declaration_variables tPOV ;
 declaration_variables : declaration_variable
                       | declaration_variables tVIR declaration_variable ;
 
-declaration_variable : tID {
-                            printf("-- PARSING -- Trouvé une déclaration : variable %s\n",$1); 
-                            glob_variable=$1;} 
-                     | tID tEQU operation {printf("-- PARSING -- Trouvé une déclaration-allocation: %s\n",$1); glob_variable=$1;}; 
+declaration_variable : tID { printf("-- PARSING -- Trouvé une déclaration\n");
+                     printf("-- MEMOIRE -- Variable %s ajoutée au symtab avec success code",$1) ;
+                    printf(" %d\n",symtab_add(symtab,$1,"int",depth));
+ } 
+                     | tID tEQU operation {printf("-- PARSING -- Trouvé une déclaration-allocation \n"); 
+printf("-- MEMOIRE -- Variable %s ajoutée au symtab avec success code %d\n",$1,symtab_add(symtab,$1,glob_type,depth)); 
+} ; 
  
 operation : member {//glob_value = glob_value gob_op member 
           }
@@ -63,7 +70,7 @@ operation : member {//glob_value = glob_value gob_op member
 
 member : tVAL | tID ;
 
-type:tINT;
+type:tINT { strcpy(glob_type,$1);} ;
 
 instruction:tID tEQU operation tPOV {printf("-- PARSING -- Trouvé une instruction\n");
                                      glob_variable=$1;

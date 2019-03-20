@@ -15,7 +15,7 @@
 "}" {return tACF;}
 ";" {return tPOV;}
 "," {return tVIR;}
-"int" {return tINT;}
+"int" {yylval.text = strdup(yytext);return tINT;}
 "const" {return tCON;}
 "main" {return tMAIN;}
 "if" {return tIF;}
