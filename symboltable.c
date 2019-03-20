@@ -3,9 +3,6 @@
 
 #include <string.h>
 
-// DEBUG
-#include <stdio.h>
-
 
 // Initialize a symbol table with 1024 symbols, first address is 4000
 int symtab_init(SYMTAB ** pp_symtab) {
@@ -13,8 +10,6 @@ int symtab_init(SYMTAB ** pp_symtab) {
 
     if (*pp_symtab == NULL)
         return 3;
-
-    printf("Sizeof SYMTAB : %d\n", sizeof(SYMBOL));
 
     ((*pp_symtab)->symboltab[0]).address = 4000;
     (*pp_symtab)->size = 1024;
