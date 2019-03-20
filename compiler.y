@@ -11,7 +11,7 @@
 
 %token <text> tID
 %token <nb> tVAL tCON
-%token tPLU tEQU tMOI tSTA tSLA tPARO tPARF tACO tACF tVIR tPOV tINT tMAIN tIF tFOR tELS tRET 
+%token tPLU tEQU tMOI tSTA tSLA tPARO tPARF tACO tACF tVIR tPOV tINT tMAIN tIF tFOR tELS tRET tPRI  
 
 %%
 start:global;
@@ -48,5 +48,7 @@ operator : tPLU | tMOI | tSLA | tSTA ;
 member : tVAL | tID ;
 
 type:tINT;
-instruction:tID tEQU operation tPOV {printf("Trouvé une instruction\n");};
+instruction:tID tEQU operation tPOV {printf("Trouvé une instruction\n");} 
+           | print_instr ;
  
+print_instr:tPRI tPARO tID tPARF tPOV {printf("Trouvé un printf sur la variable %s\n",$3);};
