@@ -3,37 +3,63 @@
 
 #include <string.h>
 
+// DEBUG
+#include <stdio.h>
+
 
 // Initialize a symbol table with 1024 symbols, first address is 4000
-int symtab_init(SYMTAB * symtab) {
-    (symtab->symboltab[0]).address = 4000;
-    symtab->size = 1024;
-    symtab->last_index = -1;
+int symtab_init(SYMTAB ** pp_symtab) {
+    *pp_symtab = malloc(sizeof(SYMTAB));
+
+    if (*pp_symtab == NULL)
+        return 3;
+
+    printf("Sizeof SYMTAB : %d\n", sizeof(SYMBOL));
+
+    ((*pp_symtab)->symboltab[0]).address = 4000;
+    (*pp_symtab)->size = 1024;
+    (*pp_symtab)->last_index = -1;
+
+    return 0;
+
+}
+
+// Free the pointer and the memory associated to the symbol table
+void symtab_free(SYMTAB ** pp_symtab){
+    free(*pp_symtab);
 }
 
 
 // Add a symbol to the symbol table
-int symtab_add(SYMTAB * symtab, char * name, char * type, int depth) {
+int symtab_add(SYMTAB * p_symtab, char * name, char * type, int depth) {
 
     // Size of the variable type given
     int typesize = 0;
 
-    if(symtab->size == symtab->last_index)
-        return -1;
-    
-    // Pointer to the array of symbols of symtab
-    SYMBOL * stab = symtab->symboltab;
+    // If the symbol table is full, we return 2
+    if(p_symtab->last_index >= p_symtab->size)
+        return 2;
 
-    (symtab->last_index)++;
-    strcpy(stab[symtab->last_index].name, name);
-    strcpy(stab[symtab->last_index].type, type);
-    stab[symtab->last_index].depth = depth;
-
+    // Variable type size evaluation (return 1 if type not recognized)
     if(strcmp(type,"int") == 0)
         typesize = 4;
+    else
+        return 1;
+    
+    // Pointer to the array of symbols of symtab
+    SYMBOL * stab = p_symtab->symboltab;
 
-    if(symtab->last_index > 0)
-        stab[symtab->last_index].address = stab[symtab->last_index - 1].address + typesize;
+    (p_symtab->last_index)++;
+
+    // Copying symbol informations
+    strcpy(stab[p_symtab->last_index].name, name);
+    strcpy(stab[p_symtab->last_index].type, type);
+    stab[p_symtab->last_index].depth = depth;
+
+    // Evaluate symbol address 
+    // (the first address doesn't need evaluation, since it is fixed at initialization)
+    if(p_symtab->last_index > 0)
+        stab[p_symtab->last_index].address = stab[p_symtab->last_index - 1].address + typesize;
 
     return 0;
 
@@ -41,7 +67,7 @@ int symtab_add(SYMTAB * symtab, char * name, char * type, int depth) {
 
 
 // Return the SYMBOL struct corresponding to the symbol designated by id
-SYMBOL symtab_get(SYMTAB symtab, char * id) {
+SYMBOL symtab_get(SYMTAB * p_symtab, char * id) {
 
     // Current index of the symbol being checked and size of the table
     int currIndex;
@@ -53,7 +79,7 @@ SYMBOL symtab_get(SYMTAB symtab, char * id) {
     SYMBOL symbol;
     
     // Pointer to the array of symbols of symtab
-    SYMBOL * stab = symtab.symboltab;
+    SYMBOL * stab = p_symtab->symboltab;
 
     // The symbol (to return) is initialized to null
     // It will be returned as it is if nothing is found
@@ -65,7 +91,7 @@ SYMBOL symtab_get(SYMTAB symtab, char * id) {
     currIndex = 0;
     
     // While we haven't found the symbol, we iterate on the array
-    while(currIndex <= symtab.last_index && !found_symbol){
+    while(currIndex <= p_symtab->last_index && !found_symbol){
         
         // Check if the name of the symbol matches with the given ID
         if(strcmp(stab[currIndex].name,id) == 0)
