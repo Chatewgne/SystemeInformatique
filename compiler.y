@@ -2,13 +2,16 @@
     #include <stdio.h>
     #include <stdlib.h>
     #include "symboltable.h"
-    
+    int yylex();
+    void yyerror(char*);
+
     //mémorisation des variables
     int depth = 0 ;
     SYMTAB symtab ;
-    char* glob_variable ;
-    int glob_value ;
-    char glob_operator;
+    char* glob_type ;
+    char* glob_variable = 0;
+    int glob_value = 0 ;
+    char glob_operator = '+';
 %}
 
 %union {
@@ -22,6 +25,9 @@
 %token <car> tPLU tEQU tSLA tMOI tSTA
 %token tPARO tPARF tACO tACF tVIR tPOV tINT tMAIN tIF tFOR tELS tRET tPRI  
 
+%left tPLU tMOI
+%left tSTA tSLA //STA et SLA prioritaires
+
 %%
 start: { printf("-- MEMOIRE -- symtab initialisé, succes code : %d\n",symtab_init(&symtab) ); } global ; 
 
@@ -33,20 +39,6 @@ body:declaration_lines instructions;
 instructions : 
              | instructions instruction ;
 
-
-/*declarations : /* empty 
-             | declarations declaration ;
-declaration:type tID tPOV {printf("Trouvé une déclaration\n");
-                         // tab_add($2,$1,depth);
-                            } 
-| type tID tEQU tVAL tPOV {printf("Trouvé une déclaration-allocation\n"); 
-                          //  tab_add($2,$1,depth); 
-                          //  symbol var = tab_get($2); 
-                         //    printf("STORE %d %d\n", var.address, $4);
-                             printf("STORE %s %d\n", "ADDRESSE", $4);
-                          }; */
-
-
 declaration_lines : /* empty */
              | declaration_lines declaration_line ;
 
@@ -55,16 +47,19 @@ declaration_line : type declaration_variables tPOV ;
 declaration_variables : declaration_variable
                       | declaration_variables tVIR declaration_variable ;
 
-declaration_variable : tID {printf("-- PARSING -- Trouvé une déclaration : variable %s\n",$1); glob_variable=$1;} 
+declaration_variable : tID {
+                            printf("-- PARSING -- Trouvé une déclaration : variable %s\n",$1); 
+                            glob_variable=$1;} 
                      | tID tEQU operation {printf("-- PARSING -- Trouvé une déclaration-allocation: %s\n",$1); glob_variable=$1;}; 
  
-operation : member 
-          | operation operator member ;
-
-operator : tPLU {glob_operator = $1;}
-         | tMOI {glob_operator = $1;}
-         | tSLA {glob_operator = $1;}
-         | tSTA {glob_operator = $1;} ;
+operation : member {//glob_value = glob_value gob_op member 
+          }
+          | operation tPLU operation { //printf("LOAD  }
+} 
+          | operation tMOI operation 
+          | operation tSLA operation 
+          | operation tSTA operation 
+          ;
 
 member : tVAL | tID ;
 
