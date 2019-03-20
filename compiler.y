@@ -10,8 +10,8 @@
 }
 
 %token <text> tID
-%token <nb> tVAL
-%token tPLU tEQU tMOI tSTA tSLA tPARO tPARF tACO tACF tVIR tPOV tINT tCON tMAIN tIF tFOR tELS tRET 
+%token <nb> tVAL tCON
+%token tPLU tEQU tMOI tSTA tSLA tPARO tPARF tACO tACF tVIR tPOV tINT tMAIN tIF tFOR tELS tRET 
 
 %%
 start:global;
@@ -40,7 +40,7 @@ declaration_line : type declaration_variables tPOV ;
 declaration_variables : declaration_variable
                       | declaration_variables tVIR declaration_variable ;
 declaration_variable : tID {printf("Trouvé une déclaration : variable %s\n",$1);} 
-                     | tID tEQU operation {printf("Trouvé une déclaration-allocation\n");}; 
+                     | tID tEQU operation {printf("Trouvé une déclaration-allocation: %s\n",$1);}; 
  
 operation : member
           | operation operator member ;
