@@ -61,6 +61,37 @@ int symtab_add(SYMTAB * p_symtab, char * name, char * type, int depth) {
 }
 
 
+// Get back the last_index of the table to the previous depth (curr_depth - 1)
+// Return -1 if the depth is already 0
+int symtab_pop(SYMTAB * p_symtab) {
+
+    // Last (so current) depth in the table
+    int last_depth;
+
+    // Pointer to the array of symbols of symtab
+    SYMBOL * stab = p_symtab->symboltab;
+
+    last_depth = stab[p_symtab->last_index].depth;
+
+    if (last_depth > 0) {
+
+        do {
+            (p_symtab->last_index)--;            
+        } while (last_depth == stab[p_symtab->last_index].depth);
+
+        return 0;
+
+    }
+
+    else
+        return -1;
+
+
+}
+
+
+
+
 // Return the SYMBOL struct corresponding to the symbol designated by id
 SYMBOL symtab_get(SYMTAB * p_symtab, char * id) {
 

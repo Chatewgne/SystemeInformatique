@@ -35,6 +35,11 @@ void symtab_free(SYMTAB ** pp_symtab);
 */
 int symtab_add(SYMTAB * p_symtab, char * name, char * type, int depth);
 
+// Get back the last_index of the table to the previous depth (curr_depth - 1)
+// Return -1 if the depth is already 0
+// A FINIR
+int symtab_pop(SYMTAB * p_symtab);
+
 
 /*  
 *   Return the SYMBOL struct corresponding to the symbol designated by id
