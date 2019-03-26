@@ -1,5 +1,9 @@
 
+#define SYMTAB_UNKNOWN_TYPE -1
+#define SYMTAB_FULL -2
+#define SYMTAB_ALREADY_EXISTS -3
 
+#define SYMTAB_NO_TMP_LEFT -5
 
 typedef struct {
     int address;
@@ -30,9 +34,9 @@ void symtab_free(SYMTAB ** pp_symtab);
 // Add a symbol to the symbol table (return -1 if cannot add one)
 /*
     Error codes :
-    - 1 : The variable type hasn't been recognized
-    - 2 : The symbol table is already full (last_index >= size)
-    - 3 : The symbol already exists in the symbol table
+    - SYMTAB_UNKNOWN_TYPE (-1) : The variable type hasn't been recognized
+    - SYMTAB_FULL (-2) : The symbol table is already full (last_index >= size)
+    - SYMTAB_ALREADY_EXISTS (-3) : The symbol already exists in the symbol table
 */
 int symtab_add(SYMTAB * p_symtab, char * name, char * type, int depth);
 
@@ -41,22 +45,30 @@ int symtab_add(SYMTAB * p_symtab, char * name, char * type, int depth);
 int symtab_pop(SYMTAB * p_symtab);
 
 
-
-// Add a temporary symbol to the symbol table
-int symtab_add_tmp(SYMTAB * p_symtab, char * type);
-
-/* 
-*   Pop the last temporary symbol of the symbol table
-*   Return the address of this symbol
-*   (return -1 if something went wrong)
-*/
-int symtab_pop_tmp(SYMTAB * p_symtab);
-
-
-
-
 /*  
 *   Return the SYMBOL struct corresponding to the symbol designated by id
 *   Depth equals -1 when no symbol has been found
 */
 SYMBOL symtab_get(SYMTAB * p_symtab, char * id);
+
+
+
+/****************************************************
+            TEMPORARY SYMBOL PRIMITIVES
+****************************************************/
+
+// Add a temporary symbol to the symbol table
+/*
+    Error codes :
+    - SYMTAB_UNKNOWN_TYPE (-1) : The variable type hasn't been recognized
+    - SYMTAB_FULL (-2) : The symbol table is already full (last_index >= size)
+*/
+int symtab_add_tmp(SYMTAB * p_symtab, char * type);
+
+/* 
+*   Pop the last temporary symbol of the symbol table
+*   Return this last symbol (it has no name and its depth is -42)
+*   Depth equals SYMTAB_NO_TMP_LEFT (-5) if there is no temporary symbol to pop
+*/
+SYMBOL symtab_pop_tmp(SYMTAB * p_symtab);
+
