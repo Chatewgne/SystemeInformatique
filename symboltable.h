@@ -32,12 +32,12 @@ void symtab_free(SYMTAB ** pp_symtab);
     Error codes :
     - 1 : The variable type hasn't been recognized
     - 2 : The symbol table is already full (last_index >= size)
+    - 3 : The symbol already exists in the symbol table
 */
 int symtab_add(SYMTAB * p_symtab, char * name, char * type, int depth);
 
 // Get back the last_index of the table to the previous depth (curr_depth - 1)
 // Return -1 if the depth is already 0
-// A FINIR
 int symtab_pop(SYMTAB * p_symtab);
 
 

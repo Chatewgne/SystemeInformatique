@@ -31,15 +31,23 @@ int symtab_add(SYMTAB * p_symtab, char * name, char * type, int depth) {
     // Size of the variable type given
     int typesize = 0;
 
-    // If the symbol table is full, we return 2
-    if(p_symtab->last_index >= p_symtab->size)
-        return 2;
 
     // Variable type size evaluation (return 1 if type not recognized)
     if(strcmp(type,"int") == 0)
         typesize = 4;
     else
         return 1;
+
+    // If the symbol table is full, we return 2
+    if(p_symtab->last_index >= p_symtab->size)
+        return 2;
+
+    // Checking if the symbol already exists in the table
+    // If it does, we return 3
+    SYMBOL symbol_check = symtab_get(p_symtab, name);
+    if(symbol_check.address == -1)
+        return 3;
+    
     
     // Pointer to the array of symbols of symtab
     SYMBOL * stab = p_symtab->symboltab;
