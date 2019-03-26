@@ -1,5 +1,5 @@
 #!/bin/bash 
-flex compiler.l
+flex takoyaki.l
 #gcc -o compiler lex.yy.c -ll
-yacc -d compiler.y
-gcc -o compiler y.tab.c lex.yy.c -ly -ll
+yacc -d takoyaki.y
+gcc -o takoyaki symboltable.c y.tab.c lex.yy.c -ly -ll
