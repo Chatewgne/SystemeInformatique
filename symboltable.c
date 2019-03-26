@@ -188,31 +188,27 @@ int symtab_add_tmp(SYMTAB * p_symtab, char * type) {
 *   Return this last symbol (it has no name and its depth is -42)
 *   Depth equals SYMTAB_NO_TMP_LEFT (-5) if there is no temporary symbol to pop
 */
-SYMBOL symtab_pop_tmp(SYMTAB * p_symtab){
-
-    // Symbol returned by the function
-    SYMBOL symbol;
+int symtab_pop_tmp(SYMTAB * p_symtab){
     
+    // Address of the temporary symbol to return
+    // By default equals -5 (SYMTAB_NO_TMP_LEFT)
+    int tmp_symbol_address = SYMTAB_NO_TMP_LEFT;
+
     // Pointer to the array of symbols of symtab
     SYMBOL * stab = p_symtab->symboltab;
 
-    // The symbol (to return) is initialized to null
-    // It will be returned as it is if nothing is found
-    symbol.address = -1;
-    symbol.name[0] = '\0';
-    symbol.type[0] = '\0';
-    symbol.depth = SYMTAB_NO_TMP_LEFT;
+
 
     // IF the last symbol is a temporary one...
     if(stab[p_symtab->last_index].depth == -42){
 
         // ... we will return this symbol
-        symbol = stab[p_symtab->last_index];
+        tmp_symbol_address = (stab[p_symtab->last_index]).address;
         (p_symtab->last_index)--;
 
-        // ELSE it will return the null symbol seen before
+        // ELSE it will return SYMTAB_NO_TMP_LEFT
     }
 
-    return symbol;
+    return tmp_symbol_address;
 
 }

@@ -67,8 +67,8 @@ int symtab_add_tmp(SYMTAB * p_symtab, char * type);
 
 /* 
 *   Pop the last temporary symbol of the symbol table
-*   Return this last symbol (it has no name and its depth is -42)
-*   Depth equals SYMTAB_NO_TMP_LEFT (-5) if there is no temporary symbol to pop
+*   Return its address
+*   OR return SYMTAB_NO_TMP_LEFT (-5) if there is no temporary symbol to pop
 */
-SYMBOL symtab_pop_tmp(SYMTAB * p_symtab);
+int symtab_pop_tmp(SYMTAB * p_symtab);
 
