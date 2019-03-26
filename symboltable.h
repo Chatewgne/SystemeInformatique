@@ -41,6 +41,20 @@ int symtab_add(SYMTAB * p_symtab, char * name, char * type, int depth);
 int symtab_pop(SYMTAB * p_symtab);
 
 
+
+// Add a temporary symbol to the symbol table
+int symtab_add_tmp(SYMTAB * p_symtab, char * type);
+
+/* 
+*   Pop the last temporary symbol of the symbol table
+*   Return the address of this symbol
+*   (return -1 if something went wrong)
+*/
+int symtab_pop_tmp(SYMTAB * p_symtab);
+
+
+
+
 /*  
 *   Return the SYMBOL struct corresponding to the symbol designated by id
 *   Depth equals -1 when no symbol has been found
