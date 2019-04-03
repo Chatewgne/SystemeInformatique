@@ -3,6 +3,13 @@
     #include <stdlib.h>
     #include "symboltable.h"
     #include <string.h>
+
+// Codes corresponding to the operation to reduce
+    #define OP_ADD 1
+    #define OP_SOU -1
+    #define OP_MUL 2
+    #define OP_DIV 3
+
     int yylex();
     void yyerror(char*);
 
@@ -15,6 +22,62 @@
     char* glob_variable = 0;
     int glob_value = 0 ;
     char glob_operator = '+';
+
+// Reduce and executing an operation according to the given op (op codes at the beginning of this file)
+    void op_reducing(int operation){
+        printf("PARSING ---- Trouvé une réduction\n");
+        int op1_addr = symtab_pop_tmp(symtab) ;
+        int op2_addr = symtab_pop_tmp(symtab) ;
+        if( (op1_addr == SYMTAB_NO_TMP_LEFT) || (op2_addr == SYMTAB_NO_TMP_LEFT) )
+        {
+            printf("---- MEMOIRE Error : plus de variable temporaire à pop \n"); //TODO
+        }
+        else {
+            printf("---- MEMOIRE Poped deux variables temporaires\n");
+            printf("--- ASMB ---\n");
+            printf("LOAD R0 %d\n",op1_addr);
+            printf("LOAD R1 %d\n",op2_addr);
+
+            switch(operation){
+
+                case OP_ADD :
+                printf("ADD R0 R0 R1\n");
+                break;
+
+                case OP_SOU :
+                printf("SOU R0 R0 R1\n");
+                break;
+
+                case OP_MUL :
+                printf("MUL R0 R0 R1\n");
+                break;
+
+                case OP_DIV :
+                printf("DIV R0 R0 R1\n");
+                break;
+
+                default:
+                printf("--- ASMB --- ERROR : UNKNOWN OPERATION\n");
+                return;
+
+            }
+
+            
+            int addr_tmp = symtab_add_tmp(symtab,"int"); //TODO y a pas que des int
+            if (addr_tmp == SYMTAB_FULL) 
+            {
+                printf("---- MEMOIRE Error : problème de sauvegarde d'une variable temporaire -> table pleine\n");
+            } else if (addr_tmp == SYMTAB_UNKNOWN_TYPE) 
+            {
+            printf("---- MEMOIRE Error : problème de sauvegarde d'une variable temporaire -> type inconnu\n");
+            } else {
+            printf("---- MEMOIRE Sauvegarde d'une variable temporaire\n"); 
+            printf("--- ASMB --- \n");
+            printf("STORE %d R0\n",addr_tmp);
+            }
+            
+        }
+    }
 
 //TODO pour la prochaine fois : gérer les erreurs et débugger les calculs d'opérations 
 %}
@@ -105,44 +168,27 @@ declaration_variable : tID {    printf("PARSING ---- Trouvé une déclaration\n"
                                 
                                 ; 
 
-operation : member 
+operation: member 
           | operation tPLU operation 
                 { 
-                    printf("PARSING ---- Trouvé une réduction\n");
-                    int op1_addr = symtab_pop_tmp(symtab) ;
-                    int op2_addr = symtab_pop_tmp(symtab) ;
-                    if( (op1_addr == SYMTAB_NO_TMP_LEFT) || (op2_addr == SYMTAB_NO_TMP_LEFT) )
-                    {
-                        printf("---- MEMOIRE Error : plus de variable temporaire à pop \n"); //TODO
-                    }
-                    else {
-                        printf("---- MEMOIRE Poped deux variables temporaires\n");
-                        printf("--- ASMB ---\n");
-                        printf("LOAD R0 %d\n",op1_addr);
-                        printf("LOAD R1 %d\n",op2_addr);
-                        printf("ADD R0 R0 R1\n");
-                        int addr_tmp = symtab_add_tmp(symtab,"int"); //TODO y a pas que des int
-                        if (addr_tmp == SYMTAB_FULL) 
-                        {
-                            printf("---- MEMOIRE Error : problème de sauvegarde d'une variable temporaire -> table pleine\n");
-                        } else if (addr_tmp == SYMTAB_UNKNOWN_TYPE) 
-                        {
-                        printf("---- MEMOIRE Error : problème de sauvegarde d'une variable temporaire -> type inconnu\n");
-                        } else {
-                        printf("---- MEMOIRE Sauvegarde d'une variable temporaire\n"); 
-                        printf("--- ASMB --- \n");
-                        printf("STORE %d R0\n",addr_tmp);
-                        }
-                        
-                    }
+                    op_reducing(OP_ADD);
                 } 
-          | operation tMOI operation 
-          | operation tSLA operation 
-          | operation tSTA operation 
+          | operation tMOI operation
+                {
+                    op_reducing(OP_SOU);
+                }
+          | operation tSLA operation
+                {
+                    op_reducing(OP_DIV);
+                }
+          | operation tSTA operation
+                {
+                    op_reducing(OP_MUL);
+                }
           | tPARO operation tPARF
           ;
 
-member : tID 
+member: tID 
             { 
                 global_sym = symtab_get(symtab,$1);
                 if (global_sym.depth == -1){
