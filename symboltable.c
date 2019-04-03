@@ -144,7 +144,7 @@ SYMBOL symtab_get(SYMTAB * p_symtab, char * id) {
             TEMPORARY SYMBOL PRIMITIVES
 ****************************************************/
 
-// Add a temporary symbol to the symbol table
+// Add a temporary symbol to the symbol table and return its address
 int symtab_add_tmp(SYMTAB * p_symtab, char * type) {
 
     // Size of the variable type given
@@ -179,7 +179,7 @@ int symtab_add_tmp(SYMTAB * p_symtab, char * type) {
     if(p_symtab->last_index > 0)
         stab[p_symtab->last_index].address = stab[p_symtab->last_index - 1].address + typesize;
 
-    return 0;
+    return stab[p_symtab->last_index].address;
 
 }
 

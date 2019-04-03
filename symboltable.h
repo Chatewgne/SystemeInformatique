@@ -57,7 +57,7 @@ SYMBOL symtab_get(SYMTAB * p_symtab, char * id);
             TEMPORARY SYMBOL PRIMITIVES
 ****************************************************/
 
-// Add a temporary symbol to the symbol table
+// Add a temporary symbol to the symbol table and return its address
 /*
     Error codes :
     - SYMTAB_UNKNOWN_TYPE (-1) : The variable type hasn't been recognized
