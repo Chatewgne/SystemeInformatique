@@ -23,6 +23,14 @@
     int glob_value = 0 ;
     char glob_operator = '+';
 
+/* An instruction is written like this :
+    OP_CODE |   A   |   B   |   C   
+     1 byte |4 bytes|4 bytes|4 bytes
+*/
+// Assembly file
+    FILE * fasm = NULL;
+
+
 // Reduce and executing an operation according to the given op (op codes at the beginning of this file)
     void op_reducing(int operation){
         printf("PARSING ---- Trouvé une réduction\n");
@@ -42,6 +50,7 @@
 
                 case OP_ADD :
                 printf("ADD R0 R0 R1\n");
+                fprintf("")
                 break;
 
                 case OP_SOU :
@@ -101,7 +110,7 @@ start: {
      printf("---- MEMOIRE Symtab initialisé, success code : %d\n",symtab_init(&symtab) ); } global ; 
 
 
-global:tMAIN tPARO tPARF tACO {depth+=1;} body tACF {depth-=1;} ;
+global:tMAIN tPARO tPARF tACO {depth+=1; fopen("asm.tako", "wb+");} body tACF {depth-=1; fclose(fasm);} ;
 
 body:declaration_lines instructions;
 
