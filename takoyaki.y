@@ -54,20 +54,56 @@ declaration_variables : declaration_variable
                       | declaration_variables tVIR declaration_variable ;
 
 declaration_variable : tID {    printf("PARSING ---- Trouvé une déclaration\n");
-                                if ((symtab_add(symtab,$1,"int",depth)==3)) {
-                                    printf("PARSING ---- Cette variable existe déjà >:( \n");
+                                int symtab_result = symtab_add(symtab,$1,"int",depth);
+                                if ((symtab_result==SYMTAB_ALREADY_EXISTS)) {
+                                    printf("---- MEMOIRE Error : Cette variable existe déjà\n");
+                                }
+                                else if (symtab_result==SYMTAB_UNKNOWN_TYPE) { 
+                                    printf("PARSING ---- Error : Type non reconnu\n");
+                                }
+                                 else if (symtab_result==SYMTAB_FULL) { 
+                                    printf("---- MEMOIRE Error : La table est pleine\n");
                                 }
                                 else {
                                         printf("---- MEMOIRE Variable %s ajoutée au symtab\n",$1) ;
                                 }}
                      | tID  {   printf("PARSING ---- Trouvé une déclaration-allocation\n");
-                                if ((symtab_add(symtab,$1,"int",depth)==3)) {
-                                    printf("PARSING ---- Cette variable existe déjà >:( \n");
+                                int symtab_result = symtab_add(symtab,$1,"int",depth);
+                                if ((symtab_result==SYMTAB_ALREADY_EXISTS)) {
+                                    printf("---- MEMOIRE Error : Cette variable existe déjà\n");
+                                }
+                                else if (symtab_result==SYMTAB_UNKNOWN_TYPE) { 
+                                    printf("PARSING ---- Error : Type non reconnu\n");
+                                }
+                                 else if (symtab_result==SYMTAB_FULL) { 
+                                    printf("---- MEMOIRE Error : La table est pleine\n");
                                 }
                                 else {
-                                    printf("---- MEMOIRE Variable %s ajoutée au symtab",$1) ;
-                                 }}
-                           tEQU operation ; 
+                                        printf("---- MEMOIRE Variable %s ajoutée au symtab\n",$1) ;
+                                }}
+                       tEQU operation   { 
+                                            printf("PARSING --- Fin de déclaration : récupérer la var temp\n");
+                                            int val_addr = symtab_pop_tmp(symtab) ;
+                                            if (val_addr == SYMTAB_NO_TMP_LEFT)  {
+                                                printf("---- MEMOIRE Error : plus de variable temporaire à pop\n");
+                                            } else {
+                                                printf("--- MEMOIRE Poped une variable temporaire\n");
+                                                printf("--- ASMB ---\n");
+                                                printf("LOAD R0 %d\n",val_addr);
+                                                printf("--- MEMOIRE Récupération de l'addresse de %s\n",$1);
+                                                global_sym = symtab_get(symtab,$1);
+                                                if (global_sym.depth==-1)
+                                                { 
+                                                    printf("--- MEMOIRE Error : variable absente de la table des symboles\n"); 
+                                                }else{
+                                                    printf("--- MEMOIRE Stockage de la nouvelle valeur pour cette variable\n");
+                                                    printf("--- ASMB ---\n");
+                                                    printf("STORE %d R0\n",global_sym.address);
+                                                }
+                                            }
+                                        }
+                                
+                                ; 
 
 operation : member 
           | operation tPLU operation 
@@ -75,26 +111,26 @@ operation : member
                     printf("PARSING ---- Trouvé une réduction\n");
                     int op1_addr = symtab_pop_tmp(symtab) ;
                     int op2_addr = symtab_pop_tmp(symtab) ;
-                    if( (op1_addr == -1) || (op2_addr == -1) )
+                    if( (op1_addr == SYMTAB_NO_TMP_LEFT) || (op2_addr == SYMTAB_NO_TMP_LEFT) )
                     {
-                        printf("---- MEMOIRE Erreur : \n"); //TODO
+                        printf("---- MEMOIRE Error : plus de variable temporaire à pop \n"); //TODO
                     }
                     else {
                         printf("---- MEMOIRE Poped deux variables temporaires\n");
-                        printf("-- ASSEMBLY --\n");
+                        printf("--- ASMB ---\n");
                         printf("LOAD R0 %d\n",op1_addr);
                         printf("LOAD R1 %d\n",op2_addr);
                         printf("ADD R0 R0 R1\n");
                         int addr_tmp = symtab_add_tmp(symtab,"int"); //TODO y a pas que des int
                         if (addr_tmp == SYMTAB_FULL) 
                         {
-                            printf("---- MEMOIRE Erreur : problème de sauvegarde d'une variable temporaire -> table pleine\n");
+                            printf("---- MEMOIRE Error : problème de sauvegarde d'une variable temporaire -> table pleine\n");
                         } else if (addr_tmp == SYMTAB_UNKNOWN_TYPE) 
                         {
-                        printf("---- MEMOIRE Erreur : problème de sauvegarde d'une variable temporaire -> type inconnu\n");
+                        printf("---- MEMOIRE Error : problème de sauvegarde d'une variable temporaire -> type inconnu\n");
                         } else {
                         printf("---- MEMOIRE Sauvegarde d'une variable temporaire\n"); 
-                        printf(" -- ASSEMBLY -- \n");
+                        printf("--- ASMB --- \n");
                         printf("STORE %d R0\n",addr_tmp);
                         }
                         
@@ -109,7 +145,9 @@ operation : member
 member : tID 
             { 
                 global_sym = symtab_get(symtab,$1);
-                if (!(global_sym.depth == 0)){
+                if (global_sym.depth == -1){
+                    printf("---- MEMOIRE Error : variable absente de la table des symboles\n");
+                } else {
                     printf("PARSING ---- Récupération de la variable %s\n",$1);
                     printf(" -- ASSEMBLY -- \n");
                     printf("LOAD R0 %d\n",global_sym.address);
@@ -126,9 +164,6 @@ member : tID
                         printf(" -- ASSEMBLY -- \n");
                         printf("STORE %d R0\n",addr_tmp);
                     }
-
-                } else {
-                    printf("---- MEMOIRE Erreur : variable absente de la table des symboles\n");
                 }
             } 
        | tVAL 
