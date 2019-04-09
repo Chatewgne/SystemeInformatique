@@ -3,6 +3,7 @@
     #include <stdlib.h>
     #include "symboltable.h"
     #include <string.h>
+    #include "binwriter.h"
 
 // Codes corresponding to the operation to reduce
     #define OP_ADD 1
@@ -42,8 +43,8 @@
 // Reduce and executing an operation according to the given op (op codes at the beginning of this file)
     void op_reducing(int operation){
         printf("PARSING ---- Trouvé une réduction\n");
-        int op1_addr = symtab_pop_tmp(symtab) ;
-        int op2_addr = symtab_pop_tmp(symtab) ;
+        int16_t op1_addr = (int16_t) symtab_pop_tmp(symtab) ; //TODO attention, on a hardcodé 4000 comme addresse de début mais ça va surement causer soucis sur 16 bits ???
+        int16_t op2_addr = (int16_t) symtab_pop_tmp(symtab) ;
         if( (op1_addr == SYMTAB_NO_TMP_LEFT) || (op2_addr == SYMTAB_NO_TMP_LEFT) )
         {
             printf("---- MEMOIRE Error : plus de variable temporaire à pop \n"); //TODO
@@ -52,13 +53,14 @@
             printf("---- MEMOIRE Poped deux variables temporaires\n");
             printf("--- ASMB ---\n");
             printf("LOAD R0 %d\n",op1_addr);
+            writeAB(fasm,OP_LOAD,0,op1_addr);
             printf("LOAD R1 %d\n",op2_addr);
-
+            writeAB(fasm,OP_LOAD,1,op2_addr);
+             
             switch(operation){
 
                 case OP_ADD :
                 printf("ADD R0 R0 R1\n");
-               // fprintf("")
                 break;
 
                 case OP_SOU :
@@ -76,9 +78,9 @@
                 default:
                 printf("--- ASMB --- ERROR : UNKNOWN OPERATION\n");
                 return;
-
             }
-
+           
+            writeABC(fasm,operation,0,0,1); 
             
             int addr_tmp = symtab_add_tmp(symtab,"int"); //TODO y a pas que des int
             if (addr_tmp == SYMTAB_FULL) 
@@ -91,6 +93,7 @@
             printf("---- MEMOIRE Sauvegarde d'une variable temporaire\n"); 
             printf("--- ASMB --- \n");
             printf("STORE %d R0\n",addr_tmp);
+            writeAC(fasm,OP_STORE,addr_tmp,0);
             }
             
         }
@@ -117,7 +120,7 @@ start: {
      printf("---- MEMOIRE Symtab initialisé, success code : %d\n",symtab_init(&symtab) ); } global ; 
 
 
-global:tMAIN tPARO tPARF tACO {depth+=1; fopen("asm.tako", "wb+");} body tACF {depth-=1; fclose(fasm);} ;
+global:tMAIN tPARO tPARF tACO {depth+=1; fasm = fopen("asm.tako", "wb+");} body tACF {depth-=1; fclose(fasm);} ;
 
 body:declaration_lines instructions;
 
@@ -169,6 +172,7 @@ declaration_variable : tID {    printf("PARSING ---- Trouvé une déclaration\n"
                                                 printf("--- MEMOIRE Poped une variable temporaire\n");
                                                 printf("--- ASMB ---\n");
                                                 printf("LOAD R0 %d\n",val_addr);
+                                                writeAB(fasm,OP_LOAD,0,val_addr);
                                                 printf("--- MEMOIRE Récupération de l'addresse de %s\n",$1);
                                                 global_sym = symtab_get(symtab,$1);
                                                 if (global_sym.depth==-1)
@@ -178,6 +182,7 @@ declaration_variable : tID {    printf("PARSING ---- Trouvé une déclaration\n"
                                                     printf("--- MEMOIRE Stockage de la nouvelle valeur pour cette variable\n");
                                                     printf("--- ASMB ---\n");
                                                     printf("STORE %d R0\n",global_sym.address);
+                                                    writeAC(fasm,OP_STORE,global_sym.address,0);
                                                 }
                                             }
                                         }
@@ -213,6 +218,7 @@ member: tID
                     printf("PARSING ---- Récupération de la variable %s\n",$1);
                     printf("--- ASMB --- \n");
                     printf("LOAD R0 %d\n",global_sym.address);
+                    writeAB(fasm,OP_LOAD,0,global_sym.address);
 
                     int addr_tmp = symtab_add_tmp(symtab,"int"); //TODO y a pas que des int
                     if (addr_tmp == SYMTAB_FULL) 
@@ -225,6 +231,7 @@ member: tID
                         printf("---- MEMOIRE Sauvegarde d'une variable temporaire\n"); 
                         printf("--- ASMB --- \n");
                         printf("STORE %d R0\n",addr_tmp);
+                        writeAC(fasm,OP_STORE,addr_tmp,0);
                     }
                 }
             } 
@@ -241,7 +248,9 @@ member: tID
                     printf("---- MEMOIRE Sauvegarde d'une variable temporaire\n"); 
                     printf("--- ASMB --- \n");
                     printf("AFC R0 %d\n",$1);
+                    writeAB(fasm,OP_AFC,0,$1);
                     printf("STORE %d R0\n",addr_tmp);
+                    writeAC(fasm,OP_STORE,addr_tmp,0);
                 }
             };
 
@@ -257,6 +266,7 @@ instruction: tID {printf("PARSING ---- Trouvé une instruction\n");}
                                                 printf("--- MEMOIRE Poped une variable temporaire\n");
                                                 printf("--- ASMB ---\n");
                                                 printf("LOAD R0 %d\n",val_addr);
+                                                writeAB(fasm,OP_LOAD,0,val_addr);
                                                 printf("--- MEMOIRE Récupération de l'addresse de %s\n",$1);
                                                 global_sym = symtab_get(symtab,$1);
                                                 if (global_sym.depth==-1)
@@ -266,6 +276,7 @@ instruction: tID {printf("PARSING ---- Trouvé une instruction\n");}
                                                     printf("--- MEMOIRE Stockage de la nouvelle valeur pour cette variable\n");
                                                     printf("--- ASMB ---\n");
                                                     printf("STORE %d R0\n",global_sym.address);
+                                                    writeAC(fasm,OP_STORE,global_sym.address,0);
                                                 }
                                             }
 
