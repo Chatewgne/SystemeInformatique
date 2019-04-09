@@ -6,9 +6,21 @@
 
 // Codes corresponding to the operation to reduce
     #define OP_ADD 1
-    #define OP_SOU -1
-    #define OP_MUL 2
-    #define OP_DIV 3
+    #define OP_SOU 2
+    #define OP_MUL 3
+    #define OP_DIV 4
+    #define OP_COP 5 
+    #define OP_AFC 6 
+    #define OP_LOAD 7 
+    #define OP_STORE 8
+    #define OP_EQU 9
+    #define OP_INF 10 
+    #define OP_INFE 11 
+    #define OP_SUP 12
+    #define OP_SUPE 13 
+    #define OP_JMP 14 
+    #define OP_JMPC 15 
+    
 
     int yylex();
     void yyerror(char*);
@@ -16,16 +28,12 @@
 //mémorisation des variables
     int depth = 0 ;
     SYMTAB* symtab ;
-    SYMBOL global_sym ;
-//SYMBOL : address (int)    name (char[])   type (char[])    depth (int) 
+    SYMBOL global_sym ; //SYMBOL : address (int)    name (char[])   type (char[])    depth (int) 
     char glob_type[30] ;
-    char* glob_variable = 0;
-    int glob_value = 0 ;
-    char glob_operator = '+';
 
 /* An instruction is written like this :
     OP_CODE |   A   |   B   |   C   
-     1 byte |4 bytes|4 bytes|4 bytes
+     1 byte |1 byte |1 byte |1 byte
 */
 // Assembly file
     FILE * fasm = NULL;
@@ -50,7 +58,7 @@
 
                 case OP_ADD :
                 printf("ADD R0 R0 R1\n");
-                fprintf("")
+               // fprintf("")
                 break;
 
                 case OP_SOU :
@@ -88,7 +96,6 @@
         }
     }
 
-//TODO pour la prochaine fois : gérer les erreurs et débugger les calculs d'opérations 
 %}
 
 %union {
@@ -153,7 +160,7 @@ declaration_variable : tID {    printf("PARSING ---- Trouvé une déclaration\n"
                                 else {
                                         printf("---- MEMOIRE Variable %s ajoutée au symtab\n",$1) ;
                                 }}
-                       tEQU operation   { 
+                       tEQU operation { 
                                             printf("PARSING --- Fin de déclaration : récupérer la var temp\n");
                                             int val_addr = symtab_pop_tmp(symtab) ;
                                             if (val_addr == SYMTAB_NO_TMP_LEFT)  {
@@ -221,7 +228,7 @@ member: tID
                     }
                 }
             } 
-       | tVAL 
+       | tVAL
             {
                 int addr_tmp = symtab_add_tmp(symtab,"int"); //TODO y a pas que des int
                 if (addr_tmp == SYMTAB_FULL) 
