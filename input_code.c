@@ -1,5 +1,6 @@
 main(){
-int dodo ;
+int dodo = 1 ;
+printf ( dodo ) ; 
 while ( true ) {
 dodo = 2 ; 
 }

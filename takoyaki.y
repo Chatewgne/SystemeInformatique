@@ -21,7 +21,8 @@
     #define OP_SUP 12
     #define OP_SUPE 13 
     #define OP_JMP 14 
-    #define OP_JMPC 15 
+    #define OP_JMPC 15
+    #define OP_PRINT 16     //PRINT Ri X X  
     
 
     int yylex();
@@ -261,6 +262,15 @@ operation: member
                 }
           | tPARO operation tPARF
           ;
+print_instr: tPRI {printf("---- PARSING Trouvé un printf\n");} 
+             tPARO tID {
+                          global_sym = symtab_get(symtab,$4);
+                          printf("LOAD R0 %d\n", global_sym.address);
+                          instrutab_add(instrup,OP_LOAD,0,higher_bits(global_sym.address),lower_bits(global_sym.address));
+                          printf("PRINTF R0 x x");
+                          instrutab_add(instrup,OP_PRINT,0,42,42);
+                       } 
+             tPARF tPOV ;
 
 member: tID 
             { 
@@ -400,5 +410,4 @@ condition: tTRU {
                 }
          | operation ;
 
-print_instr:tPRI tPARO operation tPARF tPOV {printf("---- PARSING Trouvé un printf\n");};
 
