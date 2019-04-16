@@ -34,7 +34,7 @@ int symtab_add(SYMTAB * p_symtab, char * name, char * type, int depth) {
 
     // Variable type size evaluation (return 1 if type not recognized)
     if(strcmp(type,"int") == 0)
-        typesize = 4;
+        typesize = 2;
     else
         return SYMTAB_UNKNOWN_TYPE;
 
