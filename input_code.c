@@ -1,6 +1,7 @@
 main(){
-if ( 0 ) {
-dome = 0 ;
+int dodo ;
+while ( true ) {
+dodo = 2 ; 
 }
 if ( 1 ) {
 dome = 1 ; 

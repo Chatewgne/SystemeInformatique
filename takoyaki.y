@@ -377,7 +377,17 @@ if_bloc: tIF tPARO condition tPARF {
                               }
     tACO instructions tACF;
 
-while: tWHIL {loop_address = -1 ;} tPARO condition tPARF tACO tACF ;
+while: tWHIL  { loop_address = get_instrutab_index(instrup); 
+              } 
+       tPARO condition tPARF {  instruction_to_patch = get_instrutab_index(instrup);
+                                instrutab_add(instrup,OP_JMPC,0xFF,0xFF,0); //patch me later
+                             } 
+       tACO instructions tACF {         
+                                        int next_instru = get_instrutab_index(instrup)+1;
+                                        patch_instru(instrup,instruction_to_patch,higher_bits(next_instru),lower_bits(next_instru),0);
+                                        printf("JMP %d 0",loop_address);
+                                        instrutab_add(instrup,OP_JMP,higher_bits(loop_address),lower_bits(loop_address),42);
+                                       };
 
 condition: tTRU {
                     printf("AFC R0 1"); //true est un 1
