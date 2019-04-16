@@ -21,7 +21,8 @@
     #define OP_SUP 12
     #define OP_SUPE 13 
     #define OP_JMP 14 
-    #define OP_JMPC 15 
+    #define OP_JMPC 15
+    #define OP_PRINT 16     //PRINT Ri X X  
     
 
     int yylex();
@@ -261,6 +262,15 @@ operation: member
                 }
           | tPARO operation tPARF
           ;
+print_instr: tPRI {printf("---- PARSING Trouvé un printf\n");} 
+             tPARO tID {
+                          global_sym = symtab_get(symtab,$4);
+                          printf("LOAD R0 %d\n", global_sym.address);
+                          instrutab_add(instrup,OP_LOAD,0,higher_bits(global_sym.address),lower_bits(global_sym.address));
+                          printf("PRINTF R0 x x");
+                          instrutab_add(instrup,OP_PRINT,0,42,42);
+                       } 
+             tPARF tPOV ;
 
 member: tID 
             { 
@@ -377,7 +387,17 @@ if_bloc: tIF tPARO condition tPARF {
                               }
     tACO instructions tACF;
 
-while: tWHIL {loop_address = -1 ;} tPARO condition tPARF tACO tACF ;
+while: tWHIL  { loop_address = get_instrutab_index(instrup); 
+              } 
+       tPARO condition tPARF {  instruction_to_patch = get_instrutab_index(instrup);
+                                instrutab_add(instrup,OP_JMPC,0xFF,0xFF,0); //patch me later
+                             } 
+       tACO instructions tACF {         
+                                        int next_instru = get_instrutab_index(instrup)+1;
+                                        patch_instru(instrup,instruction_to_patch,higher_bits(next_instru),lower_bits(next_instru),0);
+                                        printf("JMP %d 0",loop_address);
+                                        instrutab_add(instrup,OP_JMP,higher_bits(loop_address),lower_bits(loop_address),42);
+                                       };
 
 condition: tTRU {
                     printf("AFC R0 1"); //true est un 1
@@ -390,5 +410,4 @@ condition: tTRU {
                 }
          | operation ;
 
-print_instr:tPRI tPARO operation tPARF tPOV {printf("---- PARSING Trouvé un printf\n");};
 

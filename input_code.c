@@ -1,6 +1,8 @@
 main(){
-if ( 0 ) {
-dome = 0 ;
+int dodo = 1 ;
+printf ( dodo ) ; 
+while ( true ) {
+dodo = 2 ; 
 }
 if ( 1 ) {
 dome = 1 ; 
