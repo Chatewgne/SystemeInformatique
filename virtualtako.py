@@ -74,18 +74,22 @@ if __name__ == '__main__':
         print(inst.OP, inst.A, inst.B, inst.C)
         
         if inst.OP == 1:     # ADD
+            # print("Add : ", reg[inst.B], " + ", reg[inst.C])
             reg[inst.A] = reg[inst.B] + reg[inst.C]
             reg[inst.A] &= 0xffff # Only keep the 2 first bytes of the variable in order to stay closer to the real implementation
 
         elif inst.OP == 2:   # MUL
+            # print("Mul : ", reg[inst.B], " * ", reg[inst.C])
             reg[inst.A] = reg[inst.B] * reg[inst.C]
             reg[inst.A] &= 0xffff
 
         elif inst.OP == 3:   # SOU
+            # print("Sou : ", reg[inst.B], " - ", reg[inst.C])
             reg[inst.A] = reg[inst.B] - reg[inst.C]
             reg[inst.A] &= 0xffff
 
         elif inst.OP == 4:   # DIV
+            # print("Div : ", reg[inst.B], " // ", reg[inst.C])
             reg[inst.A] = reg[inst.B] // reg[inst.C]
             reg[inst.A] &= 0xffff
 
