@@ -4,6 +4,7 @@
     #include "symboltable.h"
     #include <string.h>
     #include "binwriter.h"
+    #include "instrutable.h"
 
 // Codes corresponding to the operation to reduce
     #define OP_ADD 1
@@ -29,8 +30,11 @@
 //mémorisation des variables
     int depth = 0 ;
     SYMTAB* symtab ;
+    INSTRUTAB* instrup;
     SYMBOL global_sym ; //SYMBOL : address (int)    name (char[])   type (char[])    depth (int) 
     char glob_type[30] ;
+    int instruction_to_patch ;
+    int loop_address ;
 
 /* An instruction is written like this :
     OP_CODE |   A   |   B   |   C   
@@ -38,6 +42,15 @@
 */
 // Assembly file
     FILE * fasm = NULL;
+    FILE * fasm1 = NULL;
+
+    int8_t higher_bits(int16_t value){
+    return (int8_t) ((value >> 8) & 0xFF);
+    }
+
+    int8_t lower_bits(int16_t value){
+    return (int8_t)(value & 0xFF);
+    }
 
 
 // Reduce and executing an operation according to the given op (op codes at the beginning of this file)
@@ -53,8 +66,10 @@
             printf("---- MEMOIRE Poped deux variables temporaires\n");
             printf("--- ASMB ---\n");
             printf("LOAD R0 %d\n",op1_addr);
+            instrutab_add(instrup,OP_LOAD,0,higher_bits(op1_addr),lower_bits(op1_addr));
             writeAB(fasm,OP_LOAD,0,op1_addr);
             printf("LOAD R1 %d\n",op2_addr);
+            instrutab_add(instrup,OP_LOAD,1,higher_bits(op2_addr),lower_bits(op2_addr));
             writeAB(fasm,OP_LOAD,1,op2_addr);
              
             switch(operation){
@@ -74,13 +89,30 @@
                 case OP_DIV :
                 printf("DIV R0 R0 R1\n");
                 break;
+                        
+                case OP_INF:
+                printf("INF R0 R0 R1\n");
+                break;  
+    
+                case OP_SUP:
+                printf("SUP R0 R0 R1\n");
+                break;  
 
+                case OP_SUPE:
+                printf("SUPE R0 R0 R1\n");
+                break;  
+
+                case OP_INFE:
+                printf("INFE R0 R0 R1\n");
+                break;  
+            
                 default:
                 printf("--- ASMB --- ERROR : UNKNOWN OPERATION\n");
                 return;
             }
            
             writeABC(fasm,operation,0,0,1); 
+            instrutab_add(instrup,operation,0,0,1);
             
             int addr_tmp = symtab_add_tmp(symtab,"int"); //TODO y a pas que des int
             if (addr_tmp == SYMTAB_FULL) 
@@ -93,6 +125,7 @@
             printf("---- MEMOIRE Sauvegarde d'une variable temporaire\n"); 
             printf("--- ASMB --- \n");
             printf("STORE %d R0\n",addr_tmp);
+            instrutab_add(instrup,OP_STORE,higher_bits(addr_tmp),lower_bits(addr_tmp),0);
             writeAC(fasm,OP_STORE,addr_tmp,0);
             }
             
@@ -108,19 +141,21 @@
 }
 
 %token <text> tID tINT
-%token <nb> tVAL tCON
-%token <car> tPLU tEQU tSLA tMOI tSTA
-%token tPARO tPARF tACO tACF tVIR tPOV tMAIN tIF tFOR tELS tRET tPRI  
+%token <nb> tVAL tCON tIF
+%token <car> tPLU tEQU tSLA tMOI tSTA tIOE tSOE tINF tSUP
+%token tPARO tPARF tACO tACF tVIR tPOV tMAIN tFOR tELS tRET tPRI tTRU tFAL tWHIL
 
 %left tPLU tMOI
+%left tINF tSUP tSOE tIOE 
 %left tSTA tSLA //STA et SLA prioritaires
 
 %%
 start: {
+     instrutab_init(&instrup);
      printf("---- MEMOIRE Symtab initialisé, success code : %d\n",symtab_init(&symtab) ); } global ; 
 
 
-global:tMAIN tPARO tPARF tACO {depth+=1; fasm = fopen("asm.tako", "wb+");} body tACF {depth-=1; fclose(fasm);} ;
+global:tMAIN tPARO tPARF tACO {depth+=1; fasm = fopen("asm.tako", "wb+"); fasm1 = fopen("new_asm.tako","wb+");} body tACF {depth-=1; fclose(fasm); write_to_file(instrup,fasm1); fclose(fasm1); tprint(instrup);} ;
 
 body:declaration_lines instructions;
 
@@ -172,6 +207,7 @@ declaration_variable : tID {    printf("PARSING ---- Trouvé une déclaration\n"
                                                 printf("--- MEMOIRE Poped une variable temporaire\n");
                                                 printf("--- ASMB ---\n");
                                                 printf("LOAD R0 %d\n",val_addr);
+                                                instrutab_add(instrup,OP_LOAD,0,higher_bits(val_addr),lower_bits(val_addr));
                                                 writeAB(fasm,OP_LOAD,0,val_addr);
                                                 printf("--- MEMOIRE Récupération de l'addresse de %s\n",$1);
                                                 global_sym = symtab_get(symtab,$1);
@@ -182,6 +218,7 @@ declaration_variable : tID {    printf("PARSING ---- Trouvé une déclaration\n"
                                                     printf("--- MEMOIRE Stockage de la nouvelle valeur pour cette variable\n");
                                                     printf("--- ASMB ---\n");
                                                     printf("STORE %d R0\n",global_sym.address);
+                                                    instrutab_add(instrup,OP_STORE,higher_bits(global_sym.address),lower_bits(global_sym.address),0);
                                                     writeAC(fasm,OP_STORE,global_sym.address,0);
                                                 }
                                             }
@@ -206,6 +243,22 @@ operation: member
                 {
                     op_reducing(OP_MUL);
                 }
+          | operation tINF operation
+                {
+                    op_reducing(OP_INF);
+                }
+          | operation tSUP operation
+                {
+                    op_reducing(OP_SUP);
+                }
+          | operation tSOE operation
+                {
+                    op_reducing(OP_SUPE);
+                }
+          | operation tIOE operation
+                {
+                    op_reducing(OP_INFE);
+                }
           | tPARO operation tPARF
           ;
 
@@ -218,6 +271,7 @@ member: tID
                     printf("PARSING ---- Récupération de la variable %s\n",$1);
                     printf("--- ASMB --- \n");
                     printf("LOAD R0 %d\n",global_sym.address);
+                    instrutab_add(instrup,OP_LOAD,0,higher_bits(global_sym.address),lower_bits(global_sym.address));
                     writeAB(fasm,OP_LOAD,0,global_sym.address);
 
                     int addr_tmp = symtab_add_tmp(symtab,"int"); //TODO y a pas que des int
@@ -231,6 +285,7 @@ member: tID
                         printf("---- MEMOIRE Sauvegarde d'une variable temporaire\n"); 
                         printf("--- ASMB --- \n");
                         printf("STORE %d R0\n",addr_tmp);
+                        instrutab_add(instrup,OP_STORE,higher_bits(addr_tmp),lower_bits(addr_tmp),0);
                         writeAC(fasm,OP_STORE,addr_tmp,0);
                     }
                 }
@@ -248,8 +303,10 @@ member: tID
                     printf("---- MEMOIRE Sauvegarde d'une variable temporaire\n"); 
                     printf("--- ASMB --- \n");
                     printf("AFC R0 %d\n",$1);
+                    instrutab_add(instrup,OP_AFC,0,higher_bits($1),lower_bits($1));
                     writeAB(fasm,OP_AFC,0,$1);
                     printf("STORE %d R0\n",addr_tmp);
+                    instrutab_add(instrup,OP_STORE,higher_bits(addr_tmp),lower_bits(addr_tmp),0);
                     writeAC(fasm,OP_STORE,addr_tmp,0);
                 }
             };
@@ -266,6 +323,7 @@ instruction: tID {printf("PARSING ---- Trouvé une instruction\n");}
                                                 printf("--- MEMOIRE Poped une variable temporaire\n");
                                                 printf("--- ASMB ---\n");
                                                 printf("LOAD R0 %d\n",val_addr);
+                                                instrutab_add(instrup,OP_LOAD,0,higher_bits(val_addr),lower_bits(val_addr));
                                                 writeAB(fasm,OP_LOAD,0,val_addr);
                                                 printf("--- MEMOIRE Récupération de l'addresse de %s\n",$1);
                                                 global_sym = symtab_get(symtab,$1);
@@ -276,11 +334,61 @@ instruction: tID {printf("PARSING ---- Trouvé une instruction\n");}
                                                     printf("--- MEMOIRE Stockage de la nouvelle valeur pour cette variable\n");
                                                     printf("--- ASMB ---\n");
                                                     printf("STORE %d R0\n",global_sym.address);
+                                                    instrutab_add(instrup,OP_STORE,higher_bits(global_sym.address),lower_bits(global_sym.address),0);
                                                     writeAC(fasm,OP_STORE,global_sym.address,0);
                                                 }
                                             }
 
                                  } 
-           | print_instr ;
+           | print_instr 
+           | if | while ;
+if: if_bloc {
+                    //patching previous jump 
+                    int16_t current_instru;
+                    current_instru = get_instrutab_index(instrup);
+                    patch_instru(instrup,instruction_to_patch,higher_bits(current_instru),lower_bits(current_instru),0);
+  
+            }
+  | if_bloc {    
+                       //patching previous jump 
+                 int16_t next_instru;
+                 next_instru = get_instrutab_index(instrup) + 1 ;
+                 patch_instru(instrup,instruction_to_patch,higher_bits(next_instru),lower_bits(next_instru),0);
 
-print_instr:tPRI tPARO tID tPARF tPOV {printf("---- PARSING Trouvé un printf sur la variable %s\n",$3);};
+                 printf("JMPC -1 R0"); //format AC
+                 instruction_to_patch = get_instrutab_index(instrup);
+                 instrutab_add(instrup,OP_JMPC,0xFF,0xFF,0); //patch me later !
+
+            }
+    else_bloc {
+                  //patching previous jump 
+                  int16_t current_instru;
+                  current_instru = get_instrutab_index(instrup);
+                  patch_instru(instrup,instruction_to_patch,higher_bits(current_instru),lower_bits(current_instru),0);
+              };
+;
+
+else_bloc: tELS tACO instructions tACF ; 
+
+if_bloc: tIF tPARO condition tPARF {
+                                printf("JMPC -1 R0"); //format AC
+                                instruction_to_patch = get_instrutab_index(instrup);
+                                instrutab_add(instrup,OP_JMPC,0xFF,0xFF,0); //patch me later !
+                              }
+    tACO instructions tACF;
+
+while: tWHIL {loop_address = -1 ;} tPARO condition tPARF tACO tACF ;
+
+condition: tTRU {
+                    printf("AFC R0 1"); //true est un 1
+                    instrutab_add(instrup,OP_AFC,0,0,1); //format AB
+                }
+         | tFAL 
+                {
+                    printf("AFC R0 0"); // false est un 0
+                    instrutab_add(instrup,OP_AFC,0,0,0); //format AB
+                }
+         | operation ;
+
+print_instr:tPRI tPARO operation tPARF tPOV {printf("---- PARSING Trouvé un printf\n");};
+
