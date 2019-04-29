@@ -66,12 +66,12 @@
         else {
             printf("---- MEMOIRE Poped deux variables temporaires\n");
             printf("--- ASMB ---\n");
-            printf("LOAD R0 %d\n",op1_addr);
-            instrutab_add(instrup,OP_LOAD,0,higher_bits(op1_addr),lower_bits(op1_addr));
-            writeAB(fasm,OP_LOAD,0,op1_addr);
-            printf("LOAD R1 %d\n",op2_addr);
-            instrutab_add(instrup,OP_LOAD,1,higher_bits(op2_addr),lower_bits(op2_addr));
-            writeAB(fasm,OP_LOAD,1,op2_addr);
+            printf("LOAD R1 %d\n",op1_addr);
+            instrutab_add(instrup,OP_LOAD,1,higher_bits(op1_addr),lower_bits(op1_addr));
+            writeAB(fasm,OP_LOAD,1,op1_addr);
+            printf("LOAD R0 %d\n",op2_addr);
+            instrutab_add(instrup,OP_LOAD,0,higher_bits(op2_addr),lower_bits(op2_addr));
+            writeAB(fasm,OP_LOAD,0,op2_addr);
              
             switch(operation){
 
