@@ -144,7 +144,12 @@
 %token <text> tID tINT
 %token <nb> tVAL tCON tIF
 %token <car> tPLU tEQU tSLA tMOI tSTA tIOE tSOE tINF tSUP
-%token tPARO tPARF tACO tACF tVIR tPOV tMAIN tFOR tELS tRET tPRI tTRU tFAL tWHIL
+%token tPARO tPARF tACO tACF tVIR tPOV tMAIN tFOR tELS tRET tPRI tTRU tFAL tWHIL tCOM
+
+%type <nb> action_if
+
+%nonassoc tIFX
+%nonassoc tELS
 
 %left tPLU tMOI
 %left tINF tSUP tSOE tIOE 
@@ -156,7 +161,7 @@ start: {
      printf("---- MEMOIRE Symtab initialisé, success code : %d\n",symtab_init(&symtab) ); } global ; 
 
 
-global:tMAIN tPARO tPARF tACO {depth+=1; fasm = fopen("asm.tako", "wb+"); fasm1 = fopen("new_asm.tako","wb+");} body tACF {depth-=1; fclose(fasm); write_to_file(instrup,fasm1); fclose(fasm1); tprint(instrup);} ;
+global:tMAIN tPARO tPARF tACO {depth+=1; fasm = fopen("asm.tako", "wb+"); fasm1 = fopen("new_asm.tako","wb+");} body tACF {depth-=1; fclose(fasm); write_to_file(instrup,fasm1); fclose(fasm1); printf("--- GENERATED ASSEMBLY (decimal form) ---\n"); tprint(instrup);} ;
 
 body:declaration_lines instructions;
 
@@ -166,7 +171,8 @@ instructions :
 declaration_lines : /* empty */
                   | declaration_lines declaration_line ;
 
-declaration_line : type declaration_variables tPOV ;
+declaration_line : type declaration_variables tPOV 
+                   | tCOM {printf("PARSING ---- Trouvé un commentaire\n");} ;
 
 declaration_variables : declaration_variable
                       | declaration_variables tVIR declaration_variable ;
@@ -267,7 +273,7 @@ print_instr: tPRI {printf("---- PARSING Trouvé un printf\n");}
                           global_sym = symtab_get(symtab,$4);
                           printf("LOAD R0 %d\n", global_sym.address);
                           instrutab_add(instrup,OP_LOAD,0,higher_bits(global_sym.address),lower_bits(global_sym.address));
-                          printf("PRINTF R0 x x");
+                          printf("PRINTF R0 x x\n");
                           instrutab_add(instrup,OP_PRINT,0,42,42);
                        } 
              tPARF tPOV ;
@@ -323,7 +329,8 @@ member: tID
 
 type:tINT { strcpy(glob_type,$1);} ;
 
-instruction: tID {printf("PARSING ---- Trouvé une instruction\n");} 
+instruction: tCOM {printf("PARSING ---- Trouvé un commentaire\n");} |
+             tID {printf("PARSING ---- Trouvé une instruction\n");} 
              tEQU operation tPOV {            
                                             printf("PARSING --- Fin d'instruction : récupérer la var temp\n");
                                             int val_addr = symtab_pop_tmp(symtab) ;
@@ -352,41 +359,48 @@ instruction: tID {printf("PARSING ---- Trouvé une instruction\n");}
                                  } 
            | print_instr 
            | if | while ;
-if: if_bloc {
+action_if :{
+                printf("JMPC -1 R0"); //format AC
+                //instruction_to_patch = get_instrutab_index(instrup);
+                instrutab_add(instrup,OP_JMPC,0xFF,0xFF,0); //patch me later !
+                $$ = get_instrutab_index(instrup)-1;
+                printf("LIGNE QUI DEVRA ETRE PACTHEE : %d\n", $$);
+           }
+
+
+if: tIF tPARO condition tPARF action_if tACO instructions tACF %prec tIFX {
                     //patching previous jump 
                     int16_t current_instru;
                     current_instru = get_instrutab_index(instrup);
-                    patch_instru(instrup,instruction_to_patch,higher_bits(current_instru),lower_bits(current_instru),0);
+                  //  patch_instru(instrup,instruction_to_patch,higher_bits(current_instru),lower_bits(current_instru),0);
+                    printf("ON PATCHE LA LIGNE : %d\n",$5);
+                    patch_instru(instrup,$5,higher_bits(current_instru),lower_bits(current_instru),0);
   
-            }
-  | if_bloc {    
+            } 
+  | tIF tPARO condition tPARF action_if
+    tACO instructions tACF  {    
                        //patching previous jump 
                  int16_t next_instru;
                  next_instru = get_instrutab_index(instrup) + 1 ;
-                 patch_instru(instrup,instruction_to_patch,higher_bits(next_instru),lower_bits(next_instru),0);
+                 //patch_instru(instrup,instruction_to_patch,higher_bits(next_instru),lower_bits(next_instru),0);
+                 patch_instru(instrup,$5,higher_bits(next_instru),lower_bits(next_instru),0);
 
-                 printf("JMPC -1 R0"); //format AC
-                 instruction_to_patch = get_instrutab_index(instrup);
+                 printf("JMPC -1 R0\n"); //format AC
+                 //instruction_to_patch = get_instrutab_index(instrup);
+                 $1 = get_instrutab_index(instrup);
                  instrutab_add(instrup,OP_JMPC,0xFF,0xFF,0); //patch me later !
 
             }
-    else_bloc {
+     tELS tACO instructions tACF  {
                   //patching previous jump 
                   int16_t current_instru;
                   current_instru = get_instrutab_index(instrup);
-                  patch_instru(instrup,instruction_to_patch,higher_bits(current_instru),lower_bits(current_instru),0);
+                  //patch_instru(instrup,instruction_to_patch,higher_bits(current_instru),lower_bits(current_instru),0);
+                  patch_instru(instrup,$1,higher_bits(current_instru),lower_bits(current_instru),0);
               };
 ;
 
-else_bloc: tELS tACO instructions tACF ; 
-
-if_bloc: tIF tPARO condition tPARF {
-                                printf("JMPC -1 R0"); //format AC
-                                instruction_to_patch = get_instrutab_index(instrup);
-                                instrutab_add(instrup,OP_JMPC,0xFF,0xFF,0); //patch me later !
-                              }
-    tACO instructions tACF;
-
+                                
 while: tWHIL  { loop_address = get_instrutab_index(instrup); 
               } 
        tPARO condition tPARF {  instruction_to_patch = get_instrutab_index(instrup);
@@ -408,6 +422,15 @@ condition: tTRU {
                     printf("AFC R0 0"); // false est un 0
                     instrutab_add(instrup,OP_AFC,0,0,0); //format AB
                 }
-         | operation ;
+         | operation {
+                      int val_addr = symtab_pop_tmp(symtab) ;
+                      if (val_addr == SYMTAB_NO_TMP_LEFT)  {
+                        printf("---- MEMOIRE Error : plus de variable temporaire à pop\n");
+                      } else {
+                        printf("--- MEMOIRE Poped une variable temporaire\n");
+                        printf("--- ASMB ---\n");
+                        printf("LOAD R0 %d\n",val_addr);
+                        instrutab_add(instrup,OP_LOAD,0,higher_bits(val_addr),lower_bits(val_addr)); 
+                      }
 
-
+}

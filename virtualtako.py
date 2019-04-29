@@ -49,7 +49,7 @@ if __name__ == '__main__':
     
     instruction_table = parse_asm_file(file)
     if instruction_table is None:
-        print(f'Could not parse file {sys.argv[1]}', sys.stderr)
+        print('Could not parse file {sys.argv[1]}', sys.stderr)
         exit(1)
     
 

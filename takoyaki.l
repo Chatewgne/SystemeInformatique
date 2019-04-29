@@ -32,3 +32,4 @@
 "printf" {return tPRI;}
 ([0-9]+)|([0-9]+e[0-9]+) {yylval.nb = atoi(yytext); return tVAL;}
 [a-zA-Z]([a-z]|[A-Z]|[0-9]|_)* {yylval.text = strdup(yytext); return tID;}
+"//"(.)*\n {return tCOM;} 
