@@ -8,8 +8,8 @@
 
 // Codes corresponding to the operation to reduce
     #define OP_ADD 1
-    #define OP_SOU 2
-    #define OP_MUL 3
+    #define OP_SOU 3
+    #define OP_MUL 2
     #define OP_DIV 4
     #define OP_COP 5 
     #define OP_AFC 6 
