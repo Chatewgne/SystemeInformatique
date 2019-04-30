@@ -133,70 +133,72 @@ if __name__ == '__main__':
             reg[inst.A] = (inst.B<<8) + inst.C
 
         elif inst.OP == 7:   # LOAD
-            reg[inst.A] = memory[(inst.B<<8) + inst.C + 1]
-            reg[inst.A] += (memory[(inst.B<<8) + inst.C]<<8)
 
             if debug :
                 print("LOAD :\tR", inst.A, " <-\t@", (inst.B<<8) + inst.C, "\t(", reg[inst.A], ")")
 
+            reg[inst.A] = memory[(inst.B<<8) + inst.C + 1]
+            reg[inst.A] += (memory[(inst.B<<8) + inst.C]<<8)
+
         elif inst.OP == 8:   # STORE
-            memory[(inst.A<<8) + inst.B + 1] = (reg[inst.C] & 0x00ff)
-            memory[(inst.A<<8) + inst.B] = (reg[inst.C] & 0xff00)
 
             if debug :
                 print("STORE :\t@", (inst.A<<8) + inst.B, " <-\tR", inst.C, "\t(", reg[inst.C], ")")
 
-        elif inst.OP == 9:   # EQU
+            memory[(inst.A<<8) + inst.B + 1] = (reg[inst.C] & 0x00ff)
+            memory[(inst.A<<8) + inst.B] = (reg[inst.C] & 0xff00)
 
-            reg[inst.A] = 1 if reg[inst.B] == reg[inst.C] else 0
+        elif inst.OP == 9:   # EQU
 
             if debug :
                 print("EQU :\tR", inst.A, "= 1 if\tR", inst.B, "(", reg[inst.B], ")\t =\tR", inst.C, "(", reg[inst.C], ") else 0")
 
+            reg[inst.A] = 1 if reg[inst.B] == reg[inst.C] else 0
+
 
         elif inst.OP == 10:  # INF
-
-            reg[inst.A] = 1 if reg[inst.B] < reg[inst.C] else 0
 
             if debug :
                 print("INF :\tR", inst.A, "= 1 if\tR", inst.B, "(", reg[inst.B], ")\t <\tR", inst.C, "(", reg[inst.C], ") else 0")
 
+            reg[inst.A] = 1 if reg[inst.B] < reg[inst.C] else 0
+
         elif inst.OP == 11:  # INFE
         
-            reg[inst.A] = 1 if reg[inst.B] <= reg[inst.C] else 0
-
             if debug :
                 print("INFE :\tR", inst.A, "= 1 if\tR", inst.B, "(", reg[inst.B], ")\t <=\tR", inst.C, "(", reg[inst.C], ") else 0")
 
-        elif inst.OP == 12:  # SUP
+            reg[inst.A] = 1 if reg[inst.B] <= reg[inst.C] else 0
 
-            reg[inst.A] = 1 if reg[inst.B] > reg[inst.C] else 0
+        elif inst.OP == 12:  # SUP
 
             if debug :
                 print("SUP :\tR", inst.A, "= 1 if\tR", inst.B, "(", reg[inst.B], ")\t >\tR", inst.C, "(", reg[inst.C], ") else 0")
 
-        elif inst.OP == 13:  # SUPE
+            reg[inst.A] = 1 if reg[inst.B] > reg[inst.C] else 0
 
-            reg[inst.A] = 1 if reg[inst.B] >= reg[inst.C] else 0
+        elif inst.OP == 13:  # SUPE
 
             if debug :
                 print("SUPE :\tR", inst.A, "= 1 if\tR", inst.B, "(", reg[inst.B], ")\t >=\tR", inst.C, "(", reg[inst.C], ") else 0")
+
+            reg[inst.A] = 1 if reg[inst.B] >= reg[inst.C] else 0
 
 
         # JUMP instructions
         if inst.OP == 14:  # JMP
 
-            index = (inst.A<<8) + inst.B
-
             if debug :
                 print("JMP :\t@", inst.A, (inst.A<<8) + inst.B)
 
-        elif inst.OP == 15:  # JMPC
+            index = (inst.A<<8) + inst.B
 
-            index = (inst.A<<8) + inst.B if reg[inst.C] == 0 else (index + 1)
+        elif inst.OP == 15:  # JMPC
 
             if debug :
                 print("JMPC :\t@", inst.A, (inst.A<<8) + inst.B, "if R", inst.C, "(", reg[inst.C], ") = 0")
+
+            index = (inst.A<<8) + inst.B if reg[inst.C] == 0 else (index + 1)
 
         else:
             index += 1
@@ -219,11 +221,13 @@ if __name__ == '__main__':
     while user_input != "e":
 
         if user_input == "r":
-            user_input = int(input("Read value reg[?] : "))
-            print("reg[", user_input, "] = ", reg[user_input])
+            for i in range(len(reg)):
+                print("| R", i, "\t|", reg[i], "\t|")
         elif user_input == "m":
             user_input = int(input("Read value mem[?] : "))
             print("memory[", user_input, "] = ", memory[user_input])
+
+        print("==========\n")
 
         user_input = input("Read value from (r)eg, (m)em or (e)xit : ")
         
