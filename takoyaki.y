@@ -144,7 +144,7 @@
 %token <text> tID tINT
 %token <nb> tVAL tCON tIF
 %token <car> tPLU tEQU tSLA tMOI tSTA tIOE tSOE tINF tSUP
-%token tPARO tPARF tACO tACF tVIR tPOV tMAIN tFOR tELS tRET tPRI tTRU tFAL tWHIL tCOM
+%token tPARO tPARF tACO tACF tVIR tPOV tMAIN tFOR tELS tRET tPRI tTRU tFAL tWHIL tCOM t2EQ
 
 %type <nb> action_if
 
@@ -265,6 +265,10 @@ operation: member
           | operation tIOE operation
                 {
                     op_reducing(OP_INFE);
+                }
+         | operation t2EQ operation
+                {
+                    op_reducing(OP_EQU);
                 }
           | tPARO operation tPARF
           ;

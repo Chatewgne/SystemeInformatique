@@ -6,6 +6,7 @@
 [ \t\n]+ ;
 "=" {return tEQU ;}
 "+" {return tPLU ;}
+"==" {return t2EQ;}
 "-" {return tMOI;}
 "*" {return tSTA;}
 "/" {return tSLA;}

@@ -6,7 +6,7 @@ if ( 0 ) {
 dodo = 1;
 
 //TODO gérer les "==". 
-if (dada <= 2) {
+if ( dada == 4 ) {
 dodo = 5 ;
 } else {
 dodo = 2 ; 
