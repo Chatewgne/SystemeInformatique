@@ -392,7 +392,7 @@ if: tIF tPARO condition tPARF action_if tACO instructions tACF %prec tIFX {
                  printf("JMPC -1 R0\n"); //format AC
                  //instruction_to_patch = get_instrutab_index(instrup);
                  $1 = get_instrutab_index(instrup);
-                 instrutab_add(instrup,OP_JMPC,0xFF,0xFF,0); //patch me later !
+                 instrutab_add(instrup,OP_JMP,0xFF,0xFF,0); //patch me later !
 
             }
      tELS tACO instructions tACF  {
