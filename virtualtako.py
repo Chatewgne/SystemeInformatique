@@ -135,10 +135,16 @@ if __name__ == '__main__':
         elif inst.OP == 7:   # LOAD
 
             if debug :
-                print("LOAD :\tR", inst.A, " <-\t@", (inst.B<<8) + inst.C, "\t(", reg[inst.A], ")")
+                print("LOAD :\tR", inst.A, " <-\t@", (inst.B<<8) + inst.C, "\t(", memory[(inst.B<<8) + inst.C + 1] + memory[(inst.B<<8) + inst.C]<<8, ")")
 
             reg[inst.A] = memory[(inst.B<<8) + inst.C + 1]
             reg[inst.A] += (memory[(inst.B<<8) + inst.C]<<8)
+
+            if debug :
+                print("In @ : ", (inst.B<<8) + inst.C + 1, "(2nd octet representing the value) : ", memory[(inst.B<<8) + inst.C + 1])
+                print("In @", (inst.B<<8) + inst.C, "(1st octet representing the value) : ", memory[(inst.B<<8) + inst.C])
+
+                print("Now R", inst.A, " = ", reg[inst.A])
 
         elif inst.OP == 8:   # STORE
 
@@ -146,7 +152,13 @@ if __name__ == '__main__':
                 print("STORE :\t@", (inst.A<<8) + inst.B, " <-\tR", inst.C, "\t(", reg[inst.C], ")")
 
             memory[(inst.A<<8) + inst.B + 1] = (reg[inst.C] & 0x00ff)
-            memory[(inst.A<<8) + inst.B] = (reg[inst.C] & 0xff00)
+            memory[(inst.A<<8) + inst.B] = (reg[inst.C] & 0xff00) >> 8
+
+            if debug :
+                print("In @ : ", (inst.A<<8) + inst.B + 1, "(2nd octet representing the value) : ", memory[(inst.A<<8) + inst.B + 1])
+                print("In @", (inst.A<<8) + inst.B, "(1st octet representing the value) : ", memory[(inst.A<<8) + inst.B])
+
+                print("Which equals when summing up : ", memory[(inst.A<<8) + inst.B + 1] + (memory[(inst.A<<8) + inst.B]<<8) )
 
         elif inst.OP == 9:   # EQU
 
