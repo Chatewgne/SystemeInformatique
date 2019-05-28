@@ -1,8 +1,13 @@
 #include "instrutable.h"
-#include "binwriter.h"
 #include <stdlib.h>
 
 #include <string.h>
+
+
+// Writes the instruction OP A B C
+void writeABC(FILE* fasm, int8_t OP, int8_t A, int8_t B, int8_t C) {
+    fprintf(fasm, "%02x%02x%02x%02x\n", OP, ((unsigned int) A) & 0xFF, ((unsigned int) B) & 0xFF, ((unsigned int) C) & 0xFF);
+}
 
 
 // Initialize an instru table with 1024 symbols, first index is 0

@@ -3,7 +3,6 @@
     #include <stdlib.h>
     #include "symboltable.h"
     #include <string.h>
-    #include "binwriter.h"
     #include "instrutable.h"
 
 // Codes corresponding to the operation to reduce
@@ -68,10 +67,10 @@
             printf("--- ASMB ---\n");
             printf("LOAD R1 %d\n",op1_addr);
             instrutab_add(instrup,OP_LOAD,1,higher_bits(op1_addr),lower_bits(op1_addr));
-            writeAB(fasm,OP_LOAD,1,op1_addr);
+            //writeAB(fasm,OP_LOAD,1,op1_addr);
             printf("LOAD R0 %d\n",op2_addr);
             instrutab_add(instrup,OP_LOAD,0,higher_bits(op2_addr),lower_bits(op2_addr));
-            writeAB(fasm,OP_LOAD,0,op2_addr);
+            //writeAB(fasm,OP_LOAD,0,op2_addr);
              
             switch(operation){
 
@@ -116,7 +115,7 @@
                 return;
             }
            
-            writeABC(fasm,operation,0,0,1); 
+            //writeABC(fasm,operation,0,0,1); 
             instrutab_add(instrup,operation,0,0,1);
             
             int addr_tmp = symtab_add_tmp(symtab,"int"); 
@@ -131,7 +130,7 @@
             printf("--- ASMB --- \n");
             printf("STORE %d R0\n",addr_tmp);
             instrutab_add(instrup,OP_STORE,higher_bits(addr_tmp),lower_bits(addr_tmp),0);
-            writeAC(fasm,OP_STORE,addr_tmp,0);
+            //writeAC(fasm,OP_STORE,addr_tmp,0);
             }
             
         }
@@ -225,7 +224,7 @@ declaration_variable : tID {    printf("PARSING ---- Trouvé une déclaration\n"
                                                 printf("--- ASMB ---\n");
                                                 printf("LOAD R0 %d\n",val_addr);
                                                 instrutab_add(instrup,OP_LOAD,0,higher_bits(val_addr),lower_bits(val_addr));
-                                                writeAB(fasm,OP_LOAD,0,val_addr);
+                                                //writeAB(fasm,OP_LOAD,0,val_addr);
                                                 printf("--- MEMOIRE Récupération de l'addresse de %s\n",$1);
                                                 global_sym = symtab_get(symtab,$1);
                                                 if (global_sym.depth==-1)
@@ -236,7 +235,7 @@ declaration_variable : tID {    printf("PARSING ---- Trouvé une déclaration\n"
                                                     printf("--- ASMB ---\n");
                                                     printf("STORE %d R0\n",global_sym.address);
                                                     instrutab_add(instrup,OP_STORE,higher_bits(global_sym.address),lower_bits(global_sym.address),0);
-                                                    writeAC(fasm,OP_STORE,global_sym.address,0);
+                                                    //writeAC(fasm,OP_STORE,global_sym.address,0);
                                                 }
                                             }
                                         }
@@ -302,7 +301,7 @@ member: tID
                     printf("--- ASMB --- \n");
                     printf("LOAD R0 %d\n",global_sym.address);
                     instrutab_add(instrup,OP_LOAD,0,higher_bits(global_sym.address),lower_bits(global_sym.address));
-                    writeAB(fasm,OP_LOAD,0,global_sym.address);
+                    //writeAB(fasm,OP_LOAD,0,global_sym.address);
 
                     int addr_tmp = symtab_add_tmp(symtab,"int"); //TODO y a pas que des int
                     if (addr_tmp == SYMTAB_FULL) 
@@ -316,7 +315,7 @@ member: tID
                         printf("--- ASMB --- \n");
                         printf("STORE %d R0\n",addr_tmp);
                         instrutab_add(instrup,OP_STORE,higher_bits(addr_tmp),lower_bits(addr_tmp),0);
-                        writeAC(fasm,OP_STORE,addr_tmp,0);
+                        //writeAC(fasm,OP_STORE,addr_tmp,0);
                     }
                 }
             } 
@@ -334,10 +333,10 @@ member: tID
                     printf("--- ASMB --- \n");
                     printf("AFC R0 %d\n",$1);
                     instrutab_add(instrup,OP_AFC,0,higher_bits($1),lower_bits($1));
-                    writeAB(fasm,OP_AFC,0,$1);
+                    //writeAB(fasm,OP_AFC,0,$1);
                     printf("STORE %d R0\n",addr_tmp);
                     instrutab_add(instrup,OP_STORE,higher_bits(addr_tmp),lower_bits(addr_tmp),0);
-                    writeAC(fasm,OP_STORE,addr_tmp,0);
+                    //writeAC(fasm,OP_STORE,addr_tmp,0);
                 }
             };
 
@@ -354,7 +353,7 @@ instruction: tID {printf("PARSING ---- Trouvé une instruction\n");}
                                                 printf("--- ASMB ---\n");
                                                 printf("LOAD R0 %d\n",val_addr);
                                                 instrutab_add(instrup,OP_LOAD,0,higher_bits(val_addr),lower_bits(val_addr));
-                                                writeAB(fasm,OP_LOAD,0,val_addr);
+                                                //writeAB(fasm,OP_LOAD,0,val_addr);
                                                 printf("--- MEMOIRE Récupération de l'addresse de %s\n",$1);
                                                 global_sym = symtab_get(symtab,$1);
                                                 if (global_sym.depth==-1)
@@ -365,7 +364,7 @@ instruction: tID {printf("PARSING ---- Trouvé une instruction\n");}
                                                     printf("--- ASMB ---\n");
                                                     printf("STORE %d R0\n",global_sym.address);
                                                     instrutab_add(instrup,OP_STORE,higher_bits(global_sym.address),lower_bits(global_sym.address),0);
-                                                    writeAC(fasm,OP_STORE,global_sym.address,0);
+                                                    //writeAC(fasm,OP_STORE,global_sym.address,0);
                                                 }
                                             }
 
