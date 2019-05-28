@@ -1,15 +1,19 @@
 main(){
-//a comment
-int dada = 2 + 2 ; 
-int dodo = 1 ;
-if ( 0 ) {
-dodo = 1;
 
-//TODO gérer les "==". 
-if ( dada == 4 ) {
-dodo = 5 ;
+int dada = 0 ; 
+int dodo = 1 ;
+int dudu = 4 + 4 ;
+
+if ( dada <= 5 ) {
+dodo = 4 ;
 } else {
-dodo = 2 ; 
+dodo = dada + 5 * dudu ;
 }
+
+// this is a comment
+
+while ( dada <= 4 ) {
+    dada = dada + 1 ;
 }
+
 }

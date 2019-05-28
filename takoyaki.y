@@ -57,7 +57,7 @@
 // Reduce and executing an operation according to the given op (op codes at the beginning of this file)
     void op_reducing(int operation){
         printf("PARSING ---- Trouvé une réduction\n");
-        int16_t op1_addr = (int16_t) symtab_pop_tmp(symtab) ; //TODO attention, on a hardcodé 4000 comme addresse de début mais ça va surement causer soucis sur 16 bits ???
+        int16_t op1_addr = (int16_t) symtab_pop_tmp(symtab) ; 
         int16_t op2_addr = (int16_t) symtab_pop_tmp(symtab) ;
         if( (op1_addr == SYMTAB_NO_TMP_LEFT) || (op2_addr == SYMTAB_NO_TMP_LEFT) )
         {
@@ -105,7 +105,11 @@
 
                 case OP_INFE:
                 printf("INFE R0 R0 R1\n");
-                break;  
+                break; 
+                
+                case OP_EQU: 
+                printf("EQU R0 R0 R1\n");
+                break;
             
                 default:
                 printf("--- ASMB --- ERROR : UNKNOWN OPERATION\n");
@@ -115,7 +119,7 @@
             writeABC(fasm,operation,0,0,1); 
             instrutab_add(instrup,operation,0,0,1);
             
-            int addr_tmp = symtab_add_tmp(symtab,"int"); //TODO y a pas que des int
+            int addr_tmp = symtab_add_tmp(symtab,"int"); 
             if (addr_tmp == SYMTAB_FULL) 
             {
                 printf("---- MEMOIRE Error : problème de sauvegarde d'une variable temporaire -> table pleine\n");
@@ -152,8 +156,9 @@
 %nonassoc tELS
 
 %left tPLU tMOI
-%left tINF tSUP tSOE tIOE 
-%left tSTA tSLA //STA et SLA prioritaires
+%left tINF tSUP tSOE tIOE t2EQ 
+%left tSTA tSLA 
+
 
 %%
 start: {
@@ -166,13 +171,18 @@ global:tMAIN tPARO tPARF tACO {depth+=1; fasm = fopen("asm.tako", "wb+"); fasm1 
 body:declaration_lines instructions;
 
 instructions : 
-             | instructions instruction ;
+             | instructions instruction 
+             | instructions commentaire ;
 
 declaration_lines : /* empty */
-                  | declaration_lines declaration_line ;
+                  | declaration_lines declaration_line 
+                  { //|  declaration_lines commentaire
+                     // cause un shift/reduce conflit :(  
+                    };
 
-declaration_line : type declaration_variables tPOV 
-                   | tCOM {printf("PARSING ---- Trouvé un commentaire\n");} ;
+declaration_line : type declaration_variables tPOV  ;
+
+commentaire : tCOM {printf("PARSING ---- Trouvé un commentaire\n");} ;
 
 declaration_variables : declaration_variable
                       | declaration_variables tVIR declaration_variable ;
@@ -333,8 +343,7 @@ member: tID
 
 type:tINT { strcpy(glob_type,$1);} ;
 
-instruction: tCOM {printf("PARSING ---- Trouvé un commentaire\n");} |
-             tID {printf("PARSING ---- Trouvé une instruction\n");} 
+instruction: tID {printf("PARSING ---- Trouvé une instruction\n");} 
              tEQU operation tPOV {            
                                             printf("PARSING --- Fin d'instruction : récupérer la var temp\n");
                                             int val_addr = symtab_pop_tmp(symtab) ;
@@ -364,8 +373,7 @@ instruction: tCOM {printf("PARSING ---- Trouvé un commentaire\n");} |
            | print_instr 
            | if | while ;
 action_if :{
-                printf("JMPC -1 R0"); //format AC
-                //instruction_to_patch = get_instrutab_index(instrup);
+                printf("JMPC -1 R0\n"); //format AC
                 instrutab_add(instrup,OP_JMPC,0xFF,0xFF,0); //patch me later !
                 $$ = get_instrutab_index(instrup)-1;
                 printf("LIGNE QUI DEVRA ETRE PACTHEE : %d\n", $$);
@@ -376,7 +384,6 @@ if: tIF tPARO condition tPARF action_if tACO instructions tACF %prec tIFX {
                     //patching previous jump 
                     int16_t current_instru;
                     current_instru = get_instrutab_index(instrup);
-                  //  patch_instru(instrup,instruction_to_patch,higher_bits(current_instru),lower_bits(current_instru),0);
                     printf("ON PATCHE LA LIGNE : %d\n",$5);
                     patch_instru(instrup,$5,higher_bits(current_instru),lower_bits(current_instru),0);
   
@@ -386,11 +393,9 @@ if: tIF tPARO condition tPARF action_if tACO instructions tACF %prec tIFX {
                        //patching previous jump 
                  int16_t next_instru;
                  next_instru = get_instrutab_index(instrup) + 1 ;
-                 //patch_instru(instrup,instruction_to_patch,higher_bits(next_instru),lower_bits(next_instru),0);
                  patch_instru(instrup,$5,higher_bits(next_instru),lower_bits(next_instru),0);
 
                  printf("JMPC -1 R0\n"); //format AC
-                 //instruction_to_patch = get_instrutab_index(instrup);
                  $1 = get_instrutab_index(instrup);
                  instrutab_add(instrup,OP_JMP,0xFF,0xFF,0); //patch me later !
 
@@ -399,7 +404,6 @@ if: tIF tPARO condition tPARF action_if tACO instructions tACF %prec tIFX {
                   //patching previous jump 
                   int16_t current_instru;
                   current_instru = get_instrutab_index(instrup);
-                  //patch_instru(instrup,instruction_to_patch,higher_bits(current_instru),lower_bits(current_instru),0);
                   patch_instru(instrup,$1,higher_bits(current_instru),lower_bits(current_instru),0);
               };
 ;
