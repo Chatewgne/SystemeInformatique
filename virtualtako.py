@@ -10,7 +10,7 @@ class Instruction:
 
 def open_file(path):
     try:
-        return open(path, 'rb')
+        return open(path, 'r')
     except IOError as e:
         print(e, sys.stderr)
         return None
@@ -21,12 +21,15 @@ def parse_asm_file(file):
     i = 0
 
     try:
-        instruction_bytes = file.read(4)
-        while instruction_bytes:
-            OP, A, B, C = instruction_bytes
+        instruction_line = file.readline()
+        while instruction_line:
+            OP = int(instruction_line[slice(0,2,1)], 16)
+            A = int(instruction_line[slice(2,4,1)], 16)
+            B = int(instruction_line[slice(4,6,1)], 16)
+            C = int(instruction_line[slice(6,8,1)], 16)
             instruction_table.append(Instruction(OP, A, B, C))
             i += 1
-            instruction_bytes = file.read(4)
+            instruction_line = file.readline()
 
         return instruction_table
             
