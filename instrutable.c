@@ -75,9 +75,9 @@ void tprint(INSTRUTAB* p_instrutab){
     for (int i = 0; i < p_instrutab->last_index; i++)
     {
         tmp = get_instru(p_instrutab,i);
-        printf("@%d : %u - ",i,tmp.instr);
-        printf("%u - ",tmp.valA);
-        printf("%u - ",tmp.valB);
-        printf("%u\n",tmp.valC);
+        printf("@%d : %X - ",i, (unsigned int) tmp.instr);
+        printf("%X - ", (unsigned int) tmp.valA & 0xFF);
+        printf("%X - ",(unsigned int) tmp.valB & 0xFF );
+        printf("%X\n",(unsigned int) tmp.valC & 0xFF);
     }
 }

@@ -165,7 +165,7 @@ start: {
      printf("---- MEMOIRE Symtab initialisé, success code : %d\n",symtab_init(&symtab) ); } global ; 
 
 
-global:tMAIN tPARO tPARF tACO {depth+=1; fasm = fopen("asm.tako", "wb+"); fasm1 = fopen("new_asm.tako","wb+");} body tACF {depth-=1; fclose(fasm); write_to_file(instrup,fasm1); fclose(fasm1); printf("--- GENERATED ASSEMBLY (decimal form) ---\n"); tprint(instrup);} ;
+global:tMAIN tPARO tPARF tACO {depth+=1; fasm = fopen("asm.tako", "wb+"); fasm1 = fopen("new_asm.tako","wb+");} body tACF {depth-=1; fclose(fasm); write_to_file(instrup,fasm1); fclose(fasm1); printf("\n--- GENERATED ASSEMBLY ---\n"); tprint(instrup);} ;
 
 body:declaration_lines instructions;
 
