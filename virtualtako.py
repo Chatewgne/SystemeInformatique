@@ -144,8 +144,8 @@ if __name__ == '__main__':
             reg[inst.A] += (memory[(inst.B<<8) + inst.C]<<8)
 
             if debug :
-                print("In @ : ", (inst.B<<8) + inst.C + 1, "(2nd octet representing the value) : ", memory[(inst.B<<8) + inst.C + 1])
-                print("In @", (inst.B<<8) + inst.C, "(1st octet representing the value) : ", memory[(inst.B<<8) + inst.C])
+                print("In @ : ", (inst.B<<8) + inst.C + 1, "(2nd byte representing the value) : ", memory[(inst.B<<8) + inst.C + 1])
+                print("In @", (inst.B<<8) + inst.C, "(1st byte representing the value) : ", memory[(inst.B<<8) + inst.C])
 
                 print("Now R", inst.A, " = ", reg[inst.A])
 
@@ -158,8 +158,8 @@ if __name__ == '__main__':
             memory[(inst.A<<8) + inst.B] = (reg[inst.C] & 0xff00) >> 8
 
             if debug :
-                print("In @ : ", (inst.A<<8) + inst.B + 1, "(2nd octet representing the value) : ", memory[(inst.A<<8) + inst.B + 1])
-                print("In @", (inst.A<<8) + inst.B, "(1st octet representing the value) : ", memory[(inst.A<<8) + inst.B])
+                print("In @ : ", (inst.A<<8) + inst.B + 1, "(2nd byte representing the value) : ", memory[(inst.A<<8) + inst.B + 1])
+                print("In @", (inst.A<<8) + inst.B, "(1st byte representing the value) : ", memory[(inst.A<<8) + inst.B])
 
                 print("Which equals when summing up : ", memory[(inst.A<<8) + inst.B + 1] + (memory[(inst.A<<8) + inst.B]<<8) )
 
