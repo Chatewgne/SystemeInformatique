@@ -36,7 +36,7 @@ int get_instrutab_index(INSTRUTAB * p_instrutab);
 int patch_instru(INSTRUTAB * p_instrutab, int index, int8_t valA, int8_t valB, int8_t valC);
 
 //Gets instruction at given index
-INSTRU get_instru(INSTRUTAB * p_instrutab, int index);
+INSTRU get_instru(INSTRUTAB * p_instrutab, int index); // unused
 
 //writes the whole tab to given file 
 int write_to_file(INSTRUTAB* p_instrutab, FILE* fasm);

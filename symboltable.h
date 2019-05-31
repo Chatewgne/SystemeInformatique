@@ -2,7 +2,6 @@
 #define SYMTAB_UNKNOWN_TYPE -1
 #define SYMTAB_FULL -2
 #define SYMTAB_ALREADY_EXISTS -3
-
 #define SYMTAB_NO_TMP_LEFT -5
 
 typedef struct {
@@ -42,7 +41,7 @@ int symtab_add(SYMTAB * p_symtab, char * name, char * type, int depth);
 
 // Get back the last_index of the table to the previous depth (curr_depth - 1)
 // Return -1 if the depth is already 0
-int symtab_pop(SYMTAB * p_symtab);
+int symtab_pop(SYMTAB * p_symtab); //unused in implementation
 
 
 /*  
