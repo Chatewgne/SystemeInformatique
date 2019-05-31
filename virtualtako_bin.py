@@ -135,7 +135,7 @@ if __name__ == '__main__':
         elif inst.OP == 7:   # LOAD
 
             if debug :
-                print("LOAD :\tR", inst.A, " <-\t@", (inst.B<<8) + inst.C, "\t(", memory[(inst.B<<8) + inst.C + 1] + memory[(inst.B<<8) + inst.C]<<8, ")")
+                print("LOAD :\tR", inst.A, " <-\t@", (inst.B<<8) + inst.C, "\t(", memory[(inst.B<<8) + inst.C + 1] + (memory[(inst.B<<8) + inst.C]<<8), ")")
 
             reg[inst.A] = memory[(inst.B<<8) + inst.C + 1]
             reg[inst.A] += (memory[(inst.B<<8) + inst.C]<<8)
